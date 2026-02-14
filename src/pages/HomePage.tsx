@@ -26,7 +26,7 @@ const HomePage: FC = () => {
               </div>
             </div>
           </Col>
-          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8} className="right-column">
             <div className="right-section">
               <div className="results-section">
                 <ResultsPanel />

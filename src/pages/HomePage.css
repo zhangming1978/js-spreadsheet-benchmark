@@ -25,6 +25,13 @@
   height: 100%;
 }
 
+/* 确保右侧列有正确的高度约束 */
+.right-column {
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+}
+
 .control-section {
   width: 100%;
   flex-shrink: 0;

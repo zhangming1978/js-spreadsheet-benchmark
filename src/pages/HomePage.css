@@ -46,7 +46,9 @@
 
 .results-section {
   flex: 1;
+  min-height: 0; /* 允许 flex 子元素缩小到内容以下 */
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .system-info-section {

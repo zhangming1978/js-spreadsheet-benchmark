@@ -1,13 +1,14 @@
 import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
+import Handsontable from 'handsontable'
 
 /**
  * Handsontable 适配器
  * 将 Handsontable API 适配到统一接口
  */
 export class HandsontableAdapter extends ProductAdapter {
-  private hotInstance: any = null
+  private hotInstance: Handsontable | null = null
   private fpsMonitor: FPSMonitor
 
   constructor() {
@@ -21,7 +22,8 @@ export class HandsontableAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '16.2.0'
+    // 获取 Handsontable 实际版本
+    return Handsontable.version || '14.6.1'
   }
 
   // ==================== 生命周期 ====================
@@ -29,20 +31,27 @@ export class HandsontableAdapter extends ProductAdapter {
     this.container = container
     this.fpsMonitor.start()
 
-    // TODO: 实际集成 Handsontable SDK
-    // import Handsontable from 'handsontable'
-    // this.hotInstance = new Handsontable(container, { data: [], licenseKey: 'non-commercial-and-evaluation' })
+    // 初始化 Handsontable 实例
+    this.hotInstance = new Handsontable(container, {
+      data: [],
+      licenseKey: 'non-commercial-and-evaluation',
+      colHeaders: true,
+      rowHeaders: true,
+      width: '100%',
+      height: '100%',
+      stretchH: 'all'
+    })
 
-    console.log('[HandsontableAdapter] Initialized (placeholder)')
+    console.log('[HandsontableAdapter] Initialized with Handsontable', this.getVersion())
   }
 
   async destroy(): Promise<void> {
     this.fpsMonitor.stop()
 
-    // TODO: 调用 Handsontable 销毁方法
-    // if (this.hotInstance) {
-    //   this.hotInstance.destroy()
-    // }
+    // 销毁 Handsontable 实例
+    if (this.hotInstance) {
+      this.hotInstance.destroy()
+    }
 
     this.hotInstance = null
     console.log('[HandsontableAdapter] Destroyed')
@@ -50,90 +59,96 @@ export class HandsontableAdapter extends ProductAdapter {
 
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
-    // TODO: 实际加载数据
-    // if (this.hotInstance) {
-    //   this.hotInstance.loadData(data)
-    // }
-    console.log(`[HandsontableAdapter] Loading ${data.length} rows (placeholder)`)
+    if (this.hotInstance) {
+      // 使用 loadData 批量加载数据
+      this.hotInstance.loadData(data)
+    }
+    console.log(`[HandsontableAdapter] Loaded ${data.length} rows`)
   }
 
   getData(): any[][] {
-    // TODO: 实际获取数据
-    // if (this.hotInstance) {
-    //   return this.hotInstance.getData()
-    // }
+    if (this.hotInstance) {
+      return this.hotInstance.getData()
+    }
     return []
   }
 
   clearData(): void {
-    // TODO: 实际清空数据
-    // if (this.hotInstance) {
-    //   this.hotInstance.clear()
-    // }
-    console.log('[HandsontableAdapter] Data cleared (placeholder)')
+    if (this.hotInstance) {
+      this.hotInstance.loadData([])
+    }
+    console.log('[HandsontableAdapter] Data cleared')
   }
 
   // ==================== 编辑操作 ====================
-  setCellValue(_row: number, _col: number, _value: any): void {
-    // TODO: 实际设置单元格值
-    // if (this.hotInstance) {
-    //   this.hotInstance.setDataAtCell(_row, _col, _value)
-    // }
+  setCellValue(row: number, col: number, value: any): void {
+    if (this.hotInstance) {
+      this.hotInstance.setDataAtCell(row, col, value)
+    }
   }
 
-  getCellValue(_row: number, _col: number): any {
-    // TODO: 实际获取单元格值
-    // if (this.hotInstance) {
-    //   return this.hotInstance.getDataAtCell(_row, _col)
-    // }
+  getCellValue(row: number, col: number): any {
+    if (this.hotInstance) {
+      return this.hotInstance.getDataAtCell(row, col)
+    }
     return null
   }
 
-  setRangeValues(_startRow: number, _startCol: number, _values: any[][]): void {
-    // TODO: 实际设置区域值
-    // if (this.hotInstance) {
-    //   this.hotInstance.populateFromArray(_startRow, _startCol, _values)
-    // }
+  setRangeValues(startRow: number, startCol: number, values: any[][]): void {
+    if (this.hotInstance) {
+      this.hotInstance.populateFromArray(startRow, startCol, values)
+    }
   }
 
-  autoFill(_startRow: number, _startCol: number, _endRow: number, _endCol: number): void {
-    // TODO: 实际自动填充
-    // if (this.hotInstance) {
-    //   this.hotInstance.populateFromArray(_startRow, _startCol, [[1]], _endRow, _endCol, 'autofill')
-    // }
+  autoFill(startRow: number, startCol: number, endRow: number, endCol: number): void {
+    if (this.hotInstance) {
+      // Handsontable 的 autofill 需要使用 populateFromArray
+      const sourceValue = this.hotInstance.getDataAtCell(startRow, startCol)
+      const fillData: any[][] = []
+      for (let r = startRow; r <= endRow; r++) {
+        const row: any[] = []
+        for (let c = startCol; c <= endCol; c++) {
+          row.push(sourceValue)
+        }
+        fillData.push(row)
+      }
+      this.hotInstance.populateFromArray(startRow, startCol, fillData)
+    }
   }
 
   // ==================== 公式操作 ====================
-  setFormula(_row: number, _col: number, _formula: string): void {
-    // TODO: 实际设置公式
-    // Handsontable 需要 HyperFormula 插件
-    // if (this.hotInstance) {
-    //   this.hotInstance.setDataAtCell(_row, _col, _formula)
-    // }
+  setFormula(row: number, col: number, formula: string): void {
+    if (this.hotInstance) {
+      // Handsontable 需要 HyperFormula 插件支持公式
+      // 这里简单地将公式作为文本设置
+      this.hotInstance.setDataAtCell(row, col, formula)
+    }
   }
 
   recalculate(): void {
-    // TODO: 实际重新计算
-    // if (this.hotInstance) {
-    //   this.hotInstance.render()
-    // }
+    if (this.hotInstance) {
+      // 强制重新渲染
+      this.hotInstance.render()
+    }
   }
 
   // ==================== 滚动操作 ====================
-  scrollTo(_row: number, _col: number): void {
-    // TODO: 实际滚动
-    // if (this.hotInstance) {
-    //   this.hotInstance.scrollViewportTo(_row, _col)
-    // }
+  scrollTo(row: number, col: number): void {
+    if (this.hotInstance) {
+      this.hotInstance.scrollViewportTo(row, col)
+    }
   }
 
   getScrollPosition(): { row: number; col: number } {
-    // TODO: 实际获取滚动位置
-    // if (this.hotInstance) {
-    //   const topRow = this.hotInstance.rowOffset()
-    //   const leftCol = this.hotInstance.colOffset()
-    //   return { row: topRow, col: leftCol }
-    // }
+    if (this.hotInstance) {
+      // Handsontable 没有直接获取滚动位置的 API
+      // 使用 getFirstVisibleRow/Column 作为替代
+      const plugin = this.hotInstance.getPlugin('autoRowSize')
+      return {
+        row: this.hotInstance.rowOffset() || 0,
+        col: this.hotInstance.colOffset() || 0
+      }
+    }
     return { row: 0, col: 0 }
   }
 

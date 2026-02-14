@@ -15,6 +15,9 @@ import '@univerjs/design/lib/index.css'
 import '@univerjs/ui/lib/index.css'
 import '@univerjs/sheets-ui/lib/index.css'
 
+// 导入 Handsontable 样式
+import 'handsontable/dist/handsontable.full.min.css'
+
 // 开发环境下暴露 store 和适配器到 window 对象，方便调试
 if (import.meta.env.DEV) {
   import('./stores/useTestStore').then(({ useTestStore }) => {

@@ -20,7 +20,8 @@
       "Bash(npm install html2canvas jspdf)",
       "mcp__sjs-mcp__get_code_guidelines",
       "Bash(npm install:*)",
-      "WebFetch(domain:univer.ai)"
+      "WebFetch(domain:univer.ai)",
+      "WebFetch(domain:handsontable.com)"
     ]
   }
 }

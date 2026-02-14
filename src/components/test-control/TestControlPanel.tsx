@@ -1,6 +1,6 @@
-import { FC, useRef } from 'react'
-import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip } from 'antd'
-import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { FC, useRef, useState } from 'react'
+import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal } from 'antd'
+import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
 import { TestEngine } from '@/core/engine'
@@ -24,6 +24,9 @@ const TestControlPanel: FC = () => {
 
   // 测试引擎引用
   const testEngineRef = useRef<TestEngine | null>(null)
+
+  // 测试前警告对话框状态
+  const [showWarningModal, setShowWarningModal] = useState(false)
 
   // 测试场景选项
   const scenarioOptions = [
@@ -111,12 +114,19 @@ const TestControlPanel: FC = () => {
     setSelectedProducts(checkedValues)
   }
 
-  // 处理开始测试
-  const handleStartTest = async () => {
+  // 处理开始测试按钮点击
+  const handleStartTest = () => {
     if (selectedProducts.length < 2) {
       message.error('请至少选择 2 个产品进行对比')
       return
     }
+    // 显示警告对话框
+    setShowWarningModal(true)
+  }
+
+  // 确认开始测试
+  const confirmStartTest = async () => {
+    setShowWarningModal(false)
 
     try {
       // 创建测试引擎
@@ -256,6 +266,46 @@ const TestControlPanel: FC = () => {
           </div>
         </Col>
       </Row>
+
+      {/* 测试前警告对话框 */}
+      <Modal
+        title={
+          <span>
+            <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: 8 }} />
+            测试前重要提示
+          </span>
+        }
+        open={showWarningModal}
+        onOk={confirmStartTest}
+        onCancel={() => setShowWarningModal(false)}
+        okText="我已了解，开始测试"
+        cancelText="取消"
+        width={500}
+        centered
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p style={{ fontSize: 14, marginBottom: 16, color: '#333' }}>
+            为确保测试结果的准确性，请在测试期间遵守以下规则：
+          </p>
+          <ul style={{ paddingLeft: 20, margin: 0, lineHeight: 2 }}>
+            <li style={{ color: '#666' }}>
+              <strong style={{ color: '#333' }}>请勿操作鼠标和键盘</strong>，避免干扰性能测试
+            </li>
+            <li style={{ color: '#666' }}>
+              <strong style={{ color: '#333' }}>请勿打开其他应用程序</strong>，避免占用系统资源
+            </li>
+            <li style={{ color: '#666' }}>
+              <strong style={{ color: '#333' }}>建议关闭不必要的后台程序</strong>，确保测试环境纯净
+            </li>
+            <li style={{ color: '#666' }}>
+              <strong style={{ color: '#333' }}>请保持浏览器窗口在前台</strong>，避免影响渲染性能
+            </li>
+          </ul>
+          <p style={{ fontSize: 13, marginTop: 16, marginBottom: 0, color: '#999' }}>
+            测试过程中会显示实时性能监控窗口，请耐心等待测试完成。
+          </p>
+        </div>
+      </Modal>
     </Card>
   )
 }

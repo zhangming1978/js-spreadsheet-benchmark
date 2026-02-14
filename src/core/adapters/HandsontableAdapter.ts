@@ -21,7 +21,7 @@ export class HandsontableAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '14.5'
+    return '16.2.0'
   }
 
   // ==================== 生命周期 ====================

@@ -1,6 +1,6 @@
 import { FC } from 'react'
-import { Card, Select, InputNumber, Button, Space, Row, Col, Checkbox, message } from 'antd'
-import { PlayCircleOutlined, StopOutlined } from '@ant-design/icons'
+import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip } from 'antd'
+import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
 import './TestControlPanel.css'
@@ -32,6 +32,22 @@ const TestControlPanel: FC = () => {
     { value: TestScenario.EXCEL_IMPORT, label: 'Excel导入性能' }
   ]
 
+  // 数据规模选项
+  const dataSizeOptions = [
+    { value: 1000, label: '1,000 行 (小规模)' },
+    { value: 10000, label: '10,000 行 (中规模)' },
+    { value: 50000, label: '50,000 行 (大规模)' },
+    { value: 100000, label: '100,000 行 (超大规模)' }
+  ]
+
+  // 冷却时间选项
+  const cooldownTimeOptions = [
+    { value: 3, label: '3 秒' },
+    { value: 5, label: '5 秒' },
+    { value: 10, label: '10 秒' },
+    { value: 30, label: '30 秒' }
+  ]
+
   // 产品选项
   const productOptions = [
     { value: ProductType.SPREADJS, label: 'SpreadJS' },
@@ -45,17 +61,13 @@ const TestControlPanel: FC = () => {
   }
 
   // 处理数据规模变化
-  const handleDataSizeChange = (value: number | null) => {
-    if (value !== null) {
-      setDataSize(value)
-    }
+  const handleDataSizeChange = (value: number) => {
+    setDataSize(value)
   }
 
   // 处理冷却时间变化
-  const handleCooldownTimeChange = (value: number | null) => {
-    if (value !== null) {
-      setCooldownTime(value)
-    }
+  const handleCooldownTimeChange = (value: number) => {
+    setCooldownTime(value)
   }
 
   // 处理产品选择变化
@@ -108,33 +120,42 @@ const TestControlPanel: FC = () => {
         <Col xs={24} sm={12} md={4} lg={3} xl={3}>
           <div className="control-item">
             <label className="control-label">数据规模</label>
-            <InputNumber
+            <Select
               size="middle"
               style={{ width: '100%' }}
-              min={100}
-              max={1000000}
-              step={100}
               value={dataSize}
               onChange={handleDataSizeChange}
-              formatter={value => `${value} 行`}
-              parser={value => value?.replace(' 行', '') as any}
               disabled={isRunning}
-            />
+            >
+              {dataSizeOptions.map(option => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
           </div>
         </Col>
         <Col xs={24} sm={12} md={4} lg={3} xl={3}>
           <div className="control-item">
-            <label className="control-label">冷却时间</label>
-            <InputNumber
+            <label className="control-label">
+              冷却时间
+              <Tooltip title="每个产品测试完成后的等待时间，用于释放内存和避免相互影响，确保测试结果准确">
+                <QuestionCircleOutlined style={{ marginLeft: 4, color: '#999', fontSize: 12 }} />
+              </Tooltip>
+            </label>
+            <Select
               size="middle"
               style={{ width: '100%' }}
-              min={1}
-              max={60}
               value={cooldownTime}
               onChange={handleCooldownTimeChange}
-              addonAfter="秒"
               disabled={isRunning}
-            />
+            >
+              {cooldownTimeOptions.map(option => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Select>
           </div>
         </Col>
         <Col xs={24} sm={12} md={6} lg={7} xl={8}>

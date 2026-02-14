@@ -21,7 +21,7 @@ export class UniverAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '0.2'
+    return '0.15.5'
   }
 
   // ==================== 生命周期 ====================

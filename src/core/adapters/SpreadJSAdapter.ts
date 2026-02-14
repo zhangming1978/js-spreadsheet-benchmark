@@ -22,7 +22,7 @@ export class SpreadJSAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '17.2'
+    return '19.0.1'
   }
 
   // ==================== 生命周期 ====================
@@ -31,9 +31,9 @@ export class SpreadJSAdapter extends ProductAdapter {
     this.fpsMonitor.start()
 
     // TODO: 实际集成 SpreadJS SDK
-    // import GC from '@mescius/spread-sheets'
+    // import GC from '@grapecity-software/spread-sheets'
     // this.workbook = new GC.Spread.Sheets.Workbook(container, { sheetCount: 1 })
-    // this.sheet = this.workbook.getActiveSheet()
+    // this._sheet = this.workbook.getActiveSheet()
 
     console.log('[SpreadJSAdapter] Initialized (placeholder)')
   }

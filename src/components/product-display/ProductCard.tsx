@@ -33,7 +33,9 @@ const ProductCard: FC<ProductCardProps> = ({ productType }) => {
     >
       <div className="product-container">
         <div className="product-placeholder">
-          <Spin tip="等待测试..." />
+          <Spin tip="等待测试...">
+            <div style={{ minHeight: 100 }} />
+          </Spin>
         </div>
       </div>
     </Card>

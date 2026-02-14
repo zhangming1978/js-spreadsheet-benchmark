@@ -48,6 +48,9 @@ const PerformanceChart: FC = () => {
       return
     }
 
+    // 确保图表容器可见后调整大小
+    chartInstanceRef.current.resize()
+
     const option = generateChartOption(results, chartType)
     chartInstanceRef.current.setOption(option, true)
   }, [results, chartType])

@@ -163,7 +163,8 @@ const TestControlPanel: FC = () => {
               onChange={handleScenarioChange}
               disabled={isRunning}
               optionLabelProp="label"
-              dropdownStyle={{ minWidth: 450 }}
+              popupMatchSelectWidth={false}
+              styles={{ popup: { root: { minWidth: 450 } } }}
             >
               {scenarioOptions.map(option => (
                 <Option key={option.value} value={option.value} label={option.label}>

@@ -1,0 +1,47 @@
+.test-control-panel {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.test-control-panel .ant-card-body {
+  padding: 16px;
+}
+
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-item-buttons {
+  justify-content: flex-end;
+  padding-top: 20px;
+}
+
+.control-label {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .control-item-buttons {
+    padding-top: 0;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .test-control-panel .ant-card-body {
+    padding: 12px;
+  }
+
+  .control-item-buttons .ant-space {
+    width: 100%;
+  }
+
+  .control-item-buttons .ant-btn {
+    flex: 1;
+  }
+}

@@ -1,0 +1,50 @@
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0 24px;
+  height: auto;
+  line-height: normal;
+}
+
+.header-content {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 12px 0;
+}
+
+.header-title {
+  color: white !important;
+  margin: 0 !important;
+  font-weight: 600;
+  font-size: 22px !important;
+}
+
+.header-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* 响应式设计 */
+@media (min-width: 1920px) {
+  .header-content {
+    max-width: 1920px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 16px;
+  }
+
+  .header-content {
+    padding: 10px 0;
+  }
+
+  .header-title {
+    font-size: 18px !important;
+  }
+
+  .header-subtitle {
+    font-size: 11px;
+  }
+}

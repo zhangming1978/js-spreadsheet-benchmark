@@ -1,0 +1,120 @@
+.performance-monitor {
+  margin-bottom: 16px;
+}
+
+.performance-monitor .ant-card-head-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.monitor-placeholder {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.monitor-placeholder p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.monitor-hint {
+  font-size: 12px;
+  margin-top: 8px !important;
+}
+
+.current-product {
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f0f5ff;
+  border-left: 3px solid #1890ff;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.current-product strong {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.metric-card {
+  height: 100%;
+  border: 1px solid #f0f0f0;
+}
+
+.metric-card .ant-card-body {
+  padding: 16px;
+}
+
+.metric-card .ant-statistic-title {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.metric-card .ant-statistic-content {
+  font-size: 24px;
+}
+
+.metric-card .ant-statistic-content-suffix {
+  font-size: 14px;
+  margin-left: 4px;
+}
+
+.metric-card .ant-progress {
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.metric-hint {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 4px;
+}
+
+.metric-info {
+  padding: 8px 0;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: rgba(0, 0, 0, 0.45);
+  font-weight: 500;
+}
+
+.info-value {
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+  max-width: 60%;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .metric-card .ant-statistic-content {
+    font-size: 20px;
+  }
+
+  .metric-card .ant-statistic-content-suffix {
+    font-size: 12px;
+  }
+
+  .current-product {
+    font-size: 12px;
+  }
+}

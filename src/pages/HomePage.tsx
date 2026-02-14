@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { Layout, Row, Col } from 'antd'
 import AppHeader from '@/components/layout/AppHeader'
 import TestControlPanel from '@/components/test-control/TestControlPanel'
+import PerformanceMonitor from '@/components/performance-monitor/PerformanceMonitor'
 import ProductDisplayArea from '@/components/product-display/ProductDisplayArea'
 import ResultsPanel from '@/components/results/ResultsPanel'
 import './HomePage.css'
@@ -18,6 +19,9 @@ const HomePage: FC = () => {
             <div className="left-section">
               <div className="control-section">
                 <TestControlPanel />
+              </div>
+              <div className="monitor-section">
+                <PerformanceMonitor />
               </div>
               <div className="display-section">
                 <ProductDisplayArea />

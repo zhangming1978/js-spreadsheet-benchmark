@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Layout } from 'antd'
+import { Layout, Row, Col } from 'antd'
 import AppHeader from '@/components/layout/AppHeader'
 import TestControlPanel from '@/components/test-control/TestControlPanel'
 import ProductDisplayArea from '@/components/product-display/ProductDisplayArea'
@@ -13,15 +13,23 @@ const HomePage: FC = () => {
     <Layout className="home-page">
       <AppHeader />
       <Content className="home-content">
-        <div className="control-section">
-          <TestControlPanel />
-        </div>
-        <div className="display-section">
-          <ProductDisplayArea />
-        </div>
-        <div className="results-section">
-          <ResultsPanel />
-        </div>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={24} lg={16} xl={16}>
+            <div className="left-section">
+              <div className="control-section">
+                <TestControlPanel />
+              </div>
+              <div className="display-section">
+                <ProductDisplayArea />
+              </div>
+            </div>
+          </Col>
+          <Col xs={24} sm={24} md={24} lg={8} xl={8}>
+            <div className="results-section">
+              <ResultsPanel />
+            </div>
+          </Col>
+        </Row>
       </Content>
     </Layout>
   )

@@ -24,11 +24,35 @@
   white-space: nowrap;
 }
 
+/* Checkbox 组响应式 */
+.control-item .ant-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .control-item-buttons {
     padding-top: 0;
     justify-content: flex-start;
+  }
+
+  .control-item .ant-checkbox-group {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+/* iPad Pro 和中等平板设备 */
+@media (max-width: 1024px) {
+  .control-item-buttons .ant-space {
+    width: 100%;
+    display: flex;
+  }
+
+  .control-item-buttons .ant-btn {
+    flex: 1;
   }
 }
 
@@ -39,9 +63,36 @@
 
   .control-item-buttons .ant-space {
     width: 100%;
+    display: flex;
   }
 
   .control-item-buttons .ant-btn {
     flex: 1;
+  }
+
+  .control-label {
+    font-size: 11px;
+  }
+
+  .control-item .ant-checkbox-group {
+    gap: 4px;
+  }
+
+  .control-item .ant-checkbox-wrapper {
+    margin: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .test-control-panel .ant-card-body {
+    padding: 10px;
+  }
+
+  .control-item {
+    gap: 2px;
+  }
+
+  .control-label {
+    font-size: 10px;
   }
 }

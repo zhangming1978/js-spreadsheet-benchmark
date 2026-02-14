@@ -45,7 +45,7 @@ const TestControlPanel: FC = () => {
             </Select>
           </div>
         </Col>
-        <Col xs={12} sm={6} md={4} lg={3} xl={3}>
+        <Col xs={24} sm={12} md={4} lg={3} xl={3}>
           <div className="control-item">
             <label className="control-label">数据规模</label>
             <InputNumber
@@ -59,7 +59,7 @@ const TestControlPanel: FC = () => {
             />
           </div>
         </Col>
-        <Col xs={12} sm={6} md={4} lg={3} xl={2}>
+        <Col xs={24} sm={12} md={4} lg={3} xl={2}>
           <div className="control-item">
             <label className="control-label">冷却时间</label>
             <InputNumber
@@ -81,7 +81,7 @@ const TestControlPanel: FC = () => {
             />
           </div>
         </Col>
-        <Col xs={24} sm={12} md={4} lg={6} xl={7}>
+        <Col xs={24} sm={24} md={24} lg={6} xl={7}>
           <div className="control-item control-item-buttons">
             <Space size="small">
               <Button

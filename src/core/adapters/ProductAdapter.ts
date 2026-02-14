@@ -14,6 +14,13 @@ export abstract class ProductAdapter {
 
   // ==================== 产品信息 ====================
   /**
+   * 获取产品类型
+   */
+  getProductType(): ProductType {
+    return this.productType
+  }
+
+  /**
    * 获取产品名称
    */
   abstract getProductName(): string

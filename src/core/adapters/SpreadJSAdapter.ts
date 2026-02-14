@@ -8,6 +8,7 @@ import { FPSMonitor } from './FPSMonitor'
  */
 export class SpreadJSAdapter extends ProductAdapter {
   private workbook: any = null
+  // @ts-ignore - Reserved for future integration
   private _sheet: any = null // 保留用于后续实际集成
   private fpsMonitor: FPSMonitor
 

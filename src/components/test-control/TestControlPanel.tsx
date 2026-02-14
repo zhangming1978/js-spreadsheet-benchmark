@@ -1,8 +1,9 @@
-import { FC } from 'react'
+import { FC, useRef } from 'react'
 import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip } from 'antd'
 import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
+import { TestEngine } from '@/core/engine'
 import './TestControlPanel.css'
 
 const { Option } = Select
@@ -20,6 +21,9 @@ const TestControlPanel: FC = () => {
     setCooldownTime,
     setSelectedProducts
   } = useTestStore()
+
+  // 测试引擎引用
+  const testEngineRef = useRef<TestEngine | null>(null)
 
   // 测试场景选项
   const scenarioOptions = [
@@ -108,19 +112,41 @@ const TestControlPanel: FC = () => {
   }
 
   // 处理开始测试
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
     if (selectedProducts.length < 2) {
       message.error('请至少选择 2 个产品进行对比')
       return
     }
-    // TODO: 启动测试流程
-    message.info('测试功能正在开发中...')
+
+    try {
+      // 创建测试引擎
+      const engine = new TestEngine({
+        scenario: selectedScenario,
+        dataSize,
+        products: selectedProducts,
+        cooldownTime
+      })
+
+      testEngineRef.current = engine
+
+      // 开始测试
+      message.info('开始性能测试...')
+      await engine.start()
+      message.success('测试完成！')
+    } catch (error) {
+      console.error('[TestControlPanel] Test failed:', error)
+      message.error('测试失败：' + (error instanceof Error ? error.message : String(error)))
+    } finally {
+      testEngineRef.current = null
+    }
   }
 
   // 处理停止测试
   const handleStopTest = () => {
-    // TODO: 停止测试流程
-    message.info('停止测试')
+    if (testEngineRef.current) {
+      testEngineRef.current.stop()
+      message.info('正在停止测试...')
+    }
   }
 
   return (

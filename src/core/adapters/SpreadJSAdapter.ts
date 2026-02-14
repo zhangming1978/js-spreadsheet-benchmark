@@ -1,15 +1,15 @@
 import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
+import * as GC from '@grapecity-software/spread-sheets'
 
 /**
  * SpreadJS 适配器
  * 将 SpreadJS API 适配到统一接口
  */
 export class SpreadJSAdapter extends ProductAdapter {
-  private workbook: any = null
-  // @ts-ignore - Reserved for future integration
-  private _sheet: any = null // 保留用于后续实际集成
+  private workbook: GC.Spread.Sheets.Workbook | null = null
+  private sheet: GC.Spread.Sheets.Worksheet | null = null
   private fpsMonitor: FPSMonitor
 
   constructor() {
@@ -23,7 +23,8 @@ export class SpreadJSAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '19.0.1'
+    // 获取 SpreadJS 实际版本
+    return GC.Spread.Sheets.VERSION || '18.2.5'
   }
 
   // ==================== 生命周期 ====================
@@ -31,120 +32,122 @@ export class SpreadJSAdapter extends ProductAdapter {
     this.container = container
     this.fpsMonitor.start()
 
-    // TODO: 实际集成 SpreadJS SDK
-    // import GC from '@grapecity-software/spread-sheets'
-    // this.workbook = new GC.Spread.Sheets.Workbook(container, { sheetCount: 1 })
-    // this._sheet = this.workbook.getActiveSheet()
+    // 初始化 SpreadJS 工作簿
+    this.workbook = new GC.Spread.Sheets.Workbook(container, {
+      sheetCount: 1,
+      newTabVisible: false
+    })
 
-    console.log('[SpreadJSAdapter] Initialized (placeholder)')
+    this.sheet = this.workbook.getActiveSheet()
+
+    // 设置工作表名称
+    if (this.sheet) {
+      this.sheet.name('Performance Test')
+    }
+
+    console.log('[SpreadJSAdapter] Initialized with SpreadJS', this.getVersion())
   }
 
   async destroy(): Promise<void> {
     this.fpsMonitor.stop()
 
-    // TODO: 调用 SpreadJS 销毁方法
-    // if (this.workbook) {
-    //   this.workbook.destroy()
-    // }
+    // 销毁 SpreadJS 工作簿
+    if (this.workbook) {
+      this.workbook.destroy()
+    }
 
     this.workbook = null
-    this._sheet = null
+    this.sheet = null
     console.log('[SpreadJSAdapter] Destroyed')
   }
 
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
-    // TODO: 实际加载数据
-    // if (this._sheet) {
-    //   this._sheet.setArray(0, 0, data)
-    // }
-    console.log(`[SpreadJSAdapter] Loading ${data.length} rows (placeholder)`)
+    if (this.sheet) {
+      // 使用 setArray 批量设置数据以提高性能
+      this.sheet.setArray(0, 0, data)
+    }
+    console.log(`[SpreadJSAdapter] Loaded ${data.length} rows`)
   }
 
   getData(): any[][] {
-    // TODO: 实际获取数据
-    // if (this._sheet) {
-    //   return this._sheet.getArray(0, 0, this._sheet.getRowCount(), this._sheet.getColumnCount())
-    // }
+    if (this.sheet) {
+      const rowCount = this.sheet.getRowCount()
+      const colCount = this.sheet.getColumnCount()
+      return this.sheet.getArray(0, 0, rowCount, colCount)
+    }
     return []
   }
 
   clearData(): void {
-    // TODO: 实际清空数据
-    // if (this._sheet) {
-    //   this._sheet.clear()
-    // }
-    console.log('[SpreadJSAdapter] Data cleared (placeholder)')
+    if (this.sheet) {
+      const rowCount = this.sheet.getRowCount()
+      const colCount = this.sheet.getColumnCount()
+      this.sheet.clear(0, 0, rowCount, colCount, GC.Spread.Sheets.SheetArea.viewport, GC.Spread.Sheets.StorageType.data)
+    }
+    console.log('[SpreadJSAdapter] Data cleared')
   }
 
   // ==================== 编辑操作 ====================
-  setCellValue(_row: number, _col: number, _value: any): void {
-    // TODO: 实际设置单元格值
-    // if (this._sheet) {
-    //   this._sheet.setValue(_row, _col, _value)
-    // }
+  setCellValue(row: number, col: number, value: any): void {
+    if (this.sheet) {
+      this.sheet.setValue(row, col, value)
+    }
   }
 
-  getCellValue(_row: number, _col: number): any {
-    // TODO: 实际获取单元格值
-    // if (this._sheet) {
-    //   return this._sheet.getValue(_row, _col)
-    // }
+  getCellValue(row: number, col: number): any {
+    if (this.sheet) {
+      return this.sheet.getValue(row, col)
+    }
     return null
   }
 
-  setRangeValues(_startRow: number, _startCol: number, _values: any[][]): void {
-    // TODO: 实际设置区域值
-    // if (this._sheet) {
-    //   this._sheet.setArray(_startRow, _startCol, _values)
-    // }
+  setRangeValues(startRow: number, startCol: number, values: any[][]): void {
+    if (this.sheet) {
+      this.sheet.setArray(startRow, startCol, values)
+    }
   }
 
-  autoFill(_startRow: number, _startCol: number, _endRow: number, _endCol: number): void {
-    // TODO: 实际自动填充
-    // if (this._sheet) {
-    //   const range = new GC.Spread.Sheets.Range(_startRow, _startCol, 1, 1)
-    //   const fillRange = new GC.Spread.Sheets.Range(
-    //     _startRow, _startCol,
-    //     _endRow - _startRow + 1,
-    //     _endCol - _startCol + 1
-    //   )
-    //   this._sheet.fillAuto(range, fillRange, { fillType: GC.Spread.Sheets.Fill.FillType.auto })
-    // }
+  autoFill(startRow: number, startCol: number, endRow: number, endCol: number): void {
+    if (this.sheet) {
+      const range = new GC.Spread.Sheets.Range(startRow, startCol, 1, 1)
+      const fillRange = new GC.Spread.Sheets.Range(
+        startRow, startCol,
+        endRow - startRow + 1,
+        endCol - startCol + 1
+      )
+      this.sheet.fillAuto(range, fillRange, { fillType: GC.Spread.Sheets.Fill.FillType.auto })
+    }
   }
 
   // ==================== 公式操作 ====================
-  setFormula(_row: number, _col: number, _formula: string): void {
-    // TODO: 实际设置公式
-    // if (this._sheet) {
-    //   this._sheet.setFormula(_row, _col, _formula)
-    // }
+  setFormula(row: number, col: number, formula: string): void {
+    if (this.sheet) {
+      this.sheet.setFormula(row, col, formula)
+    }
   }
 
   recalculate(): void {
-    // TODO: 实际重新计算
-    // if (this.workbook) {
-    //   this.workbook.recalcAll()
-    // }
+    if (this.workbook) {
+      this.workbook.recalcAll()
+    }
   }
 
   // ==================== 滚动操作 ====================
-  scrollTo(_row: number, _col: number): void {
-    // TODO: 实际滚动
-    // if (this._sheet) {
-    //   this._sheet.showRow(_row, GC.Spread.Sheets.VerticalPosition.top)
-    //   this._sheet.showColumn(_col, GC.Spread.Sheets.HorizontalPosition.left)
-    // }
+  scrollTo(row: number, col: number): void {
+    if (this.sheet) {
+      this.sheet.showRow(row, GC.Spread.Sheets.VerticalPosition.top)
+      this.sheet.showColumn(col, GC.Spread.Sheets.HorizontalPosition.left)
+    }
   }
 
   getScrollPosition(): { row: number; col: number } {
-    // TODO: 实际获取滚动位置
-    // if (this._sheet) {
-    //   return {
-    //     row: this._sheet.getViewportTopRow(0),
-    //     col: this._sheet.getViewportLeftColumn(0)
-    //   }
-    // }
+    if (this.sheet) {
+      return {
+        row: this.sheet.getViewportTopRow(0),
+        col: this.sheet.getViewportLeftColumn(0)
+      }
+    }
     return { row: 0, col: 0 }
   }
 

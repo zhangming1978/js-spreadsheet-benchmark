@@ -13,7 +13,13 @@
       "Bash(npx tsc:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(timeout:*)",
+      "Bash(if exist nul del nul)",
+      "Bash(git restore:*)",
+      "Bash(npm install html2canvas jspdf)",
+      "mcp__sjs-mcp__get_code_guidelines",
+      "Bash(npm install:*)"
     ]
   }
 }

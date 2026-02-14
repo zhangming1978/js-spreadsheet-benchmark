@@ -10,6 +10,8 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@grapecity-software/spread-sheets": "^19.0.1",
+    "@grapecity-software/spread-sheets-react": "^19.0.1",
     "antd": "^5.22.6",
     "dayjs": "^1.11.13",
     "echarts": "^5.5.1",

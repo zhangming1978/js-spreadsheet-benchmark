@@ -1,13 +1,26 @@
 import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
+import { Univer } from '@univerjs/core'
+import { defaultTheme } from '@univerjs/design'
+import { UniverFormulaEnginePlugin } from '@univerjs/engine-formula'
+import { UniverRenderEnginePlugin } from '@univerjs/engine-render'
+import { UniverSheetsPlugin } from '@univerjs/sheets'
+import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula'
+import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui'
+import { UniverUIPlugin } from '@univerjs/ui'
+import { FUniver } from '@univerjs/core/facade'
+import type { FWorkbook, FWorksheet, FRange } from '@univerjs/core/facade'
 
 /**
  * Univer 适配器
  * 将 Univer API 适配到统一接口
  */
 export class UniverAdapter extends ProductAdapter {
-  private univerInstance: any = null
+  private univer: Univer | null = null
+  private univerAPI: FUniver | null = null
+  private workbook: FWorkbook | null = null
+  private worksheet: FWorksheet | null = null
   private fpsMonitor: FPSMonitor
 
   constructor() {
@@ -21,7 +34,7 @@ export class UniverAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '0.15.5'
+    return '0.5.0'
   }
 
   // ==================== 生命周期 ====================
@@ -29,108 +42,151 @@ export class UniverAdapter extends ProductAdapter {
     this.container = container
     this.fpsMonitor.start()
 
-    // TODO: 实际集成 Univer SDK
-    // import { Univer } from '@univerjs/core'
-    // this.univerInstance = new Univer({ container })
+    // 初始化 Univer 实例
+    this.univer = new Univer({
+      theme: defaultTheme,
+    })
 
-    console.log('[UniverAdapter] Initialized (placeholder)')
+    // 注册插件
+    this.univer.registerPlugin(UniverRenderEnginePlugin)
+    this.univer.registerPlugin(UniverFormulaEnginePlugin)
+    this.univer.registerPlugin(UniverUIPlugin, {
+      container: container,
+    })
+    this.univer.registerPlugin(UniverSheetsPlugin)
+    this.univer.registerPlugin(UniverSheetsUIPlugin)
+    this.univer.registerPlugin(UniverSheetsFormulaPlugin)
+
+    // 创建 Facade API
+    this.univerAPI = FUniver.newAPI(this.univer)
+
+    // 创建工作簿
+    this.workbook = this.univerAPI.createUniverSheet({
+      name: 'Performance Test',
+    })
+
+    // 获取活动工作表
+    this.worksheet = this.workbook.getActiveSheet()
+
+    console.log('[UniverAdapter] Initialized with Univer', this.getVersion())
   }
 
   async destroy(): Promise<void> {
     this.fpsMonitor.stop()
 
-    // TODO: 调用 Univer 销毁方法
-    // if (this.univerInstance) {
-    //   this.univerInstance.dispose()
-    // }
+    // 销毁 Univer 实例
+    if (this.univer) {
+      this.univer.dispose()
+    }
 
-    this.univerInstance = null
+    this.univer = null
+    this.univerAPI = null
+    this.workbook = null
+    this.worksheet = null
     console.log('[UniverAdapter] Destroyed')
   }
 
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
-    // TODO: 实际加载数据
-    // if (this.univerInstance) {
-    //   this.univerInstance.setSheetData(data)
-    // }
-    console.log(`[UniverAdapter] Loading ${data.length} rows (placeholder)`)
+    if (this.worksheet) {
+      // 使用 setValues 批量设置数据
+      const range = this.worksheet.getRange(0, 0, data.length, data[0]?.length || 0)
+      await range.setValues(data)
+    }
+    console.log(`[UniverAdapter] Loaded ${data.length} rows`)
   }
 
   getData(): any[][] {
-    // TODO: 实际获取数据
-    // if (this.univerInstance) {
-    //   return this.univerInstance.getSheetData()
-    // }
+    if (this.worksheet) {
+      // 获取已使用的范围
+      const maxRow = 1000 // 假设最大行数
+      const maxCol = 26 // 假设最大列数
+      const range = this.worksheet.getRange(0, 0, maxRow, maxCol)
+      return range.getValues() as any[][]
+    }
     return []
   }
 
   clearData(): void {
-    // TODO: 实际清空数据
-    // if (this.univerInstance) {
-    //   this.univerInstance.clearSheet()
-    // }
-    console.log('[UniverAdapter] Data cleared (placeholder)')
+    if (this.worksheet) {
+      // 清空数据
+      const maxRow = 1000
+      const maxCol = 26
+      const range = this.worksheet.getRange(0, 0, maxRow, maxCol)
+      range.clear()
+    }
+    console.log('[UniverAdapter] Data cleared')
   }
 
   // ==================== 编辑操作 ====================
-  setCellValue(_row: number, _col: number, _value: any): void {
-    // TODO: 实际设置单元格值
-    // if (this.univerInstance) {
-    //   this.univerInstance.setCellValue(_row, _col, _value)
-    // }
+  setCellValue(row: number, col: number, value: any): void {
+    if (this.worksheet) {
+      const range = this.worksheet.getRange(row, col)
+      range.setValue(value)
+    }
   }
 
-  getCellValue(_row: number, _col: number): any {
-    // TODO: 实际获取单元格值
-    // if (this.univerInstance) {
-    //   return this.univerInstance.getCellValue(_row, _col)
-    // }
+  getCellValue(row: number, col: number): any {
+    if (this.worksheet) {
+      const range = this.worksheet.getRange(row, col)
+      return range.getValue()
+    }
     return null
   }
 
-  setRangeValues(_startRow: number, _startCol: number, _values: any[][]): void {
-    // TODO: 实际设置区域值
-    // if (this.univerInstance) {
-    //   this.univerInstance.setRangeValues(_startRow, _startCol, _values)
-    // }
+  setRangeValues(startRow: number, startCol: number, values: any[][]): void {
+    if (this.worksheet) {
+      const range = this.worksheet.getRange(startRow, startCol, values.length, values[0]?.length || 0)
+      range.setValues(values)
+    }
   }
 
-  autoFill(_startRow: number, _startCol: number, _endRow: number, _endCol: number): void {
-    // TODO: 实际自动填充
-    // if (this.univerInstance) {
-    //   this.univerInstance.autoFill({ startRow: _startRow, startCol: _startCol, endRow: _endRow, endCol: _endCol })
-    // }
+  autoFill(startRow: number, startCol: number, endRow: number, endCol: number): void {
+    if (this.worksheet) {
+      // Univer 的自动填充功能可能需要通过命令实现
+      // 这里提供一个简单的实现：复制第一个单元格的值到整个范围
+      const sourceRange = this.worksheet.getRange(startRow, startCol)
+      const sourceValue = sourceRange.getValue()
+      const targetRange = this.worksheet.getRange(startRow, startCol, endRow - startRow + 1, endCol - startCol + 1)
+      targetRange.setValue(sourceValue)
+    }
   }
 
   // ==================== 公式操作 ====================
-  setFormula(_row: number, _col: number, _formula: string): void {
-    // TODO: 实际设置公式
-    // if (this.univerInstance) {
-    //   this.univerInstance.setFormula(_row, _col, _formula)
-    // }
+  setFormula(row: number, col: number, formula: string): void {
+    if (this.worksheet) {
+      const range = this.worksheet.getRange(row, col)
+      range.setValue(formula)
+    }
   }
 
   recalculate(): void {
-    // TODO: 实际重新计算
-    // if (this.univerInstance) {
-    //   this.univerInstance.recalculate()
-    // }
+    // Univer 会自动重新计算公式
+    // 如果需要手动触发，可能需要通过命令系统
+    console.log('[UniverAdapter] Recalculate (auto)')
   }
 
   // ==================== 滚动操作 ====================
-  scrollTo(_row: number, _col: number): void {
-    // TODO: 实际滚动
-    // if (this.univerInstance) {
-    //   this.univerInstance.scrollTo(_row, _col)
-    // }
+  scrollTo(row: number, col: number): void {
+    if (this.worksheet) {
+      // 激活指定单元格（会自动滚动到该位置）
+      const range = this.worksheet.getRange(row, col)
+      range.activate()
+    }
   }
 
   getScrollPosition(): { row: number; col: number } {
-    // TODO: 实际获取滚动位置
-    // if (this.univerInstance) {
-    //   return this.univerInstance.getScrollPosition()
-    // }
+    if (this.worksheet) {
+      // 获取当前选中的单元格位置
+      const selection = this.worksheet.getSelection()
+      if (selection) {
+        const currentCell = selection.getCurrentCell()
+        return {
+          row: currentCell.actualRow,
+          col: currentCell.actualColumn
+        }
+      }
+    }
     return { row: 0, col: 0 }
   }
 
@@ -147,6 +203,6 @@ export class UniverAdapter extends ProductAdapter {
 
   // ==================== 实例访问 ====================
   getInstance(): any {
-    return this.univerInstance
+    return this.univer
   }
 }

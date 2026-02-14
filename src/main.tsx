@@ -10,6 +10,11 @@ import './index.css'
 // 导入 SpreadJS 样式
 import '@grapecity-software/spread-sheets/styles/gc.spread.sheets.excel2013white.css'
 
+// 导入 Univer 样式
+import '@univerjs/design/lib/index.css'
+import '@univerjs/ui/lib/index.css'
+import '@univerjs/sheets-ui/lib/index.css'
+
 // 开发环境下暴露 store 和适配器到 window 对象，方便调试
 if (import.meta.env.DEV) {
   import('./stores/useTestStore').then(({ useTestStore }) => {

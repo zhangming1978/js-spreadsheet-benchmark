@@ -1,0 +1,16 @@
+.system-info-panel {
+  height: 100%;
+}
+
+.system-info-panel .ant-card-body {
+  padding: 12px;
+}
+
+.system-info-panel .ant-descriptions-item-label {
+  font-weight: 500;
+  background-color: #fafafa;
+}
+
+.system-info-panel .ant-descriptions-item-content {
+  font-family: 'Consolas', 'Monaco', monospace;
+}

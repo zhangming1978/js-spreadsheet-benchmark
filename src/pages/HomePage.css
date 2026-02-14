@@ -42,8 +42,20 @@
   overflow-x: hidden;
 }
 
-.results-section {
+.right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   height: 100%;
+}
+
+.results-section {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.system-info-section {
+  flex-shrink: 0;
 }
 
 /* 响应式设计 */

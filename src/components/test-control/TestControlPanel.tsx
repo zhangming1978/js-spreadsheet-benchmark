@@ -23,21 +23,49 @@ const TestControlPanel: FC = () => {
 
   // 测试场景选项
   const scenarioOptions = [
-    { value: TestScenario.DATA_LOADING, label: '数据加载性能' },
-    { value: TestScenario.SCROLLING, label: '滚动性能' },
-    { value: TestScenario.EDITING, label: '编辑性能' },
-    { value: TestScenario.FORMULA, label: '公式计算性能' },
-    { value: TestScenario.RENDERING, label: '渲染性能' },
-    { value: TestScenario.MEMORY, label: '内存占用' },
-    { value: TestScenario.EXCEL_IMPORT, label: 'Excel导入性能' }
+    {
+      value: TestScenario.DATA_LOADING,
+      label: '数据加载性能',
+      description: '测试方法：加载指定规模的数据到表格中。评价标准：加载耗时、首次渲染时间、FPS稳定性。'
+    },
+    {
+      value: TestScenario.SCROLLING,
+      label: '滚动性能',
+      description: '测试方法：在大数据集中进行快速滚动操作。评价标准：滚动流畅度、FPS、滚动响应延迟。'
+    },
+    {
+      value: TestScenario.EDITING,
+      label: '编辑性能',
+      description: '测试方法：批量编辑单元格内容、自动填充等操作。评价标准：编辑响应时间、批量操作耗时、界面流畅度。'
+    },
+    {
+      value: TestScenario.FORMULA,
+      label: '公式计算性能',
+      description: '测试方法：设置复杂公式并触发重新计算。评价标准：公式计算耗时、依赖链更新速度、计算准确性。'
+    },
+    {
+      value: TestScenario.RENDERING,
+      label: '渲染性能',
+      description: '测试方法：测试大规模数据的初始渲染和重绘性能。评价标准：首屏渲染时间、重绘耗时、FPS。'
+    },
+    {
+      value: TestScenario.MEMORY,
+      label: '内存占用',
+      description: '测试方法：加载数据后监控内存使用情况。评价标准：初始内存占用、峰值内存、内存释放效率。'
+    },
+    {
+      value: TestScenario.EXCEL_IMPORT,
+      label: 'Excel导入性能',
+      description: '测试方法：导入标准Excel文件并解析。评价标准：文件解析耗时、数据加载速度、格式还原准确性。'
+    }
   ]
 
   // 数据规模选项
   const dataSizeOptions = [
-    { value: 1000, label: '1,000 行 (小规模)' },
-    { value: 10000, label: '10,000 行 (中规模)' },
-    { value: 50000, label: '50,000 行 (大规模)' },
-    { value: 100000, label: '100,000 行 (超大规模)' }
+    { value: 1000, label: '1千行 (小规模)' },
+    { value: 10000, label: '1万行 (中规模)' },
+    { value: 50000, label: '5万行 (大规模)' },
+    { value: 100000, label: '10万行 (超大规模)' }
   ]
 
   // 冷却时间选项
@@ -108,16 +136,23 @@ const TestControlPanel: FC = () => {
               value={selectedScenario}
               onChange={handleScenarioChange}
               disabled={isRunning}
+              optionLabelProp="label"
+              dropdownStyle={{ minWidth: 450 }}
             >
               {scenarioOptions.map(option => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
+                <Option key={option.value} value={option.value} label={option.label}>
+                  <div>
+                    <div style={{ fontWeight: 500, marginBottom: 2 }}>{option.label}</div>
+                    <div style={{ fontSize: 11, color: '#666', lineHeight: 1.3, whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                      {option.description}
+                    </div>
+                  </div>
                 </Option>
               ))}
             </Select>
           </div>
         </Col>
-        <Col xs={24} sm={12} md={4} lg={3} xl={3}>
+        <Col xs={24} sm={12} md={4} lg={3} xl={4}>
           <div className="control-item">
             <label className="control-label">数据规模</label>
             <Select
@@ -135,7 +170,7 @@ const TestControlPanel: FC = () => {
             </Select>
           </div>
         </Col>
-        <Col xs={24} sm={12} md={4} lg={3} xl={3}>
+        <Col xs={24} sm={12} md={4} lg={3} xl={2}>
           <div className="control-item">
             <label className="control-label">
               冷却时间

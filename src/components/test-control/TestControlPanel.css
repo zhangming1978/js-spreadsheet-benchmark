@@ -24,6 +24,19 @@
   white-space: nowrap;
 }
 
+/* 缩小控件字体以适应更多文本 */
+.control-item .ant-select {
+  font-size: 13px;
+}
+
+.control-item .ant-checkbox-wrapper {
+  font-size: 13px;
+}
+
+.control-item-buttons .ant-btn {
+  font-size: 13px;
+}
+
 /* Checkbox 组响应式 */
 .control-item .ant-checkbox-group {
   display: flex;

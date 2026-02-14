@@ -93,7 +93,7 @@ const PerformanceMonitor: FC = () => {
       closable={false}
       maskClosable={false}
       width={800}
-      style={{ top: 20 }}
+      centered
       className="performance-monitor-modal"
     >
       <Row gutter={[16, 16]}>

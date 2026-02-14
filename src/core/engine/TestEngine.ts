@@ -69,8 +69,6 @@ export class TestEngine {
           percentage
         })
 
-        console.log(`[TestEngine] Testing ${productType} (${i + 1}/${totalProducts})`)
-
         // 运行单个产品测试
         const result = await this.runProductTest(productType)
         this.results.push(result)
@@ -80,7 +78,6 @@ export class TestEngine {
 
         // 冷却时间（除了最后一个产品）
         if (i < totalProducts - 1) {
-          console.log(`[TestEngine] Cooldown for ${this.config.cooldownTime} seconds`)
           await this.cooldown(this.config.cooldownTime)
         }
       }

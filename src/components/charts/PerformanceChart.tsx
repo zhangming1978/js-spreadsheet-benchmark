@@ -22,7 +22,9 @@ const PerformanceChart: FC = () => {
 
   // 初始化图表
   useEffect(() => {
-    if (!chartRef.current) return
+    if (!chartRef.current) {
+      return
+    }
 
     // 创建图表实例
     chartInstanceRef.current = echarts.init(chartRef.current)
@@ -242,15 +244,18 @@ const PerformanceChart: FC = () => {
       }
       size="small"
     >
-      {results.length === 0 ? (
+      {results.length === 0 && (
         <Empty
           description="暂无测试数据"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           style={{ padding: '40px 0' }}
         />
-      ) : (
-        <div ref={chartRef} className="chart-container" />
       )}
+      <div
+        ref={chartRef}
+        className="chart-container"
+        style={{ display: results.length === 0 ? 'none' : 'block' }}
+      />
     </Card>
   )
 }

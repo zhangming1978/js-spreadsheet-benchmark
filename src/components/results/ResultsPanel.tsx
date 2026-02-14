@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { Card, Tabs } from 'antd'
 import { BarChartOutlined, LineChartOutlined, TableOutlined } from '@ant-design/icons'
-import PerformanceChart from './PerformanceChart'
+import PerformanceChart from '../charts/PerformanceChart'
 import ComparisonTable from './ComparisonTable'
 import './ResultsPanel.css'
 

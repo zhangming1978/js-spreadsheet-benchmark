@@ -63,11 +63,35 @@ export class SpreadJSAdapter extends ProductAdapter {
 
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
-    if (this.sheet) {
-      // 使用 setArray 批量设置数据以提高性能
-      this.sheet.setArray(0, 0, data)
+    if (this.sheet && this.workbook && data.length > 0) {
+      // 使用表单绑定方式加载数据，性能更好且更省内存
+      // 将二维数组转换为对象数组
+      const headers = data[0] // 第一行是表头
+      const rows = data.slice(1) // 剩余行是数据
+
+      // 转换为对象数组格式
+      const dataSource = rows.map(row => {
+        const obj: any = {}
+        headers.forEach((header, index) => {
+          obj[header] = row[index]
+        })
+        return obj
+      })
+
+      // 性能优化：挂起绘制和计算，批量加载数据后再恢复
+      this.workbook.suspendPaint()
+      this.sheet.suspendCalcService(false) // false: 不忽略脏数据
+
+      try {
+        // 使用 setDataSource 进行数据绑定
+        this.sheet.setDataSource(dataSource)
+      } finally {
+        // 恢复计算和绘制
+        this.sheet.resumeCalcService(false) // false: 只计算变化的公式
+        this.workbook.resumePaint()
+      }
     }
-    console.log(`[SpreadJSAdapter] Loaded ${data.length} rows`)
+    console.log(`[SpreadJSAdapter] Loaded ${data.length - 1} rows using data binding with performance optimization`)
   }
 
   getData(): any[][] {
@@ -153,9 +177,9 @@ export class SpreadJSAdapter extends ProductAdapter {
 
   // ==================== 性能监控 ====================
   getMemoryUsage(): number {
-    // 使用浏览器 Performance API 获取内存占用
+    // 使用浏览器 Performance API 获取内存占用（返回 MB）
     const memory = (performance as any).memory
-    return memory ? memory.usedJSHeapSize : 0
+    return memory ? memory.usedJSHeapSize / (1024 * 1024) : 0
   }
 
   getFPS(): number {

@@ -1,16 +1,17 @@
 import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
-import { Univer } from '@univerjs/core'
+import { Univer, IWorkbookData, LocaleType } from '@univerjs/core'
 import { defaultTheme } from '@univerjs/design'
-import { UniverFormulaEnginePlugin } from '@univerjs/engine-formula'
 import { UniverRenderEnginePlugin } from '@univerjs/engine-render'
 import { UniverSheetsPlugin } from '@univerjs/sheets'
-import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula'
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui'
 import { UniverUIPlugin } from '@univerjs/ui'
 import { FUniver } from '@univerjs/core/facade'
-import type { FWorkbook, FWorksheet, FRange } from '@univerjs/core/facade'
+import type { FWorkbook, FWorksheet } from '@univerjs/core/facade'
+// Import facade side effects to register facade methods
+import '@univerjs/sheets/facade'
+import '@univerjs/sheets-ui/facade'
 
 /**
  * Univer 适配器
@@ -34,7 +35,7 @@ export class UniverAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    return '0.5.0'
+    return '0.15.5'
   }
 
   // ==================== 生命周期 ====================
@@ -45,25 +46,40 @@ export class UniverAdapter extends ProductAdapter {
     // 初始化 Univer 实例
     this.univer = new Univer({
       theme: defaultTheme,
+      locale: LocaleType.ZH_CN,
     })
 
-    // 注册插件
+    // 注册核心插件和 UI 插件
     this.univer.registerPlugin(UniverRenderEnginePlugin)
-    this.univer.registerPlugin(UniverFormulaEnginePlugin)
     this.univer.registerPlugin(UniverUIPlugin, {
       container: container,
     })
     this.univer.registerPlugin(UniverSheetsPlugin)
     this.univer.registerPlugin(UniverSheetsUIPlugin)
-    this.univer.registerPlugin(UniverSheetsFormulaPlugin)
 
     // 创建 Facade API
     this.univerAPI = FUniver.newAPI(this.univer)
 
-    // 创建工作簿
-    this.workbook = this.univerAPI.createUniverSheet({
+    // 创建工作簿，指定足够大的行列数以支持性能测试
+    const workbookData: IWorkbookData = {
+      id: 'performance-test-workbook',
       name: 'Performance Test',
-    })
+      locale: LocaleType.ZH_CN,
+      sheetOrder: ['sheet1'],
+      sheets: {
+        sheet1: {
+          id: 'sheet1',
+          name: 'Sheet1',
+          rowCount: 1000000,  // 支持最大 100 万行
+          columnCount: 100,    // 支持 100 列
+          cellData: {},
+          defaultColumnWidth: 100,
+          defaultRowHeight: 20
+        }
+      }
+    }
+
+    this.workbook = this.univerAPI.createWorkbook(workbookData)
 
     // 获取活动工作表
     this.worksheet = this.workbook.getActiveSheet()

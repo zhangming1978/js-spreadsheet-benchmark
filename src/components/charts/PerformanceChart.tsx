@@ -66,7 +66,6 @@ const PerformanceChart: FC = () => {
 
   // 生成柱状图/折线图配置
   const generateBarLineOption = (data: TestResult[], type: 'bar' | 'line'): echarts.EChartsOption => {
-    // 按产品分组数据
     const productNames = [...new Set(data.map(r => r.productName))]
 
     return {
@@ -86,10 +85,11 @@ const PerformanceChart: FC = () => {
         formatter: (params: any) => {
           let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`
           params.forEach((param: any) => {
+            const unit = param.seriesName === '执行时间' ? 'ms' : param.seriesName === 'FPS' ? 'fps' : 'MB'
             result += `
               <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
                 <span>${param.marker} ${param.seriesName}:</span>
-                <span style="font-weight: 600; margin-left: 16px;">${param.value} ms</span>
+                <span style="font-weight: 600; margin-left: 16px;">${param.value} ${unit}</span>
               </div>
             `
           })
@@ -97,7 +97,7 @@ const PerformanceChart: FC = () => {
         }
       },
       legend: {
-        data: productNames,
+        data: ['执行时间', 'FPS', '内存占用'],
         bottom: 10,
         textStyle: {
           fontSize: 12
@@ -117,20 +117,36 @@ const PerformanceChart: FC = () => {
           fontSize: 12
         }
       },
-      yAxis: {
-        type: 'value',
-        name: '执行时间 (ms)',
-        nameTextStyle: {
-          fontSize: 12
+      yAxis: [
+        {
+          type: 'value',
+          name: '执行时间 (ms)',
+          position: 'left',
+          nameTextStyle: {
+            fontSize: 12
+          },
+          axisLabel: {
+            fontSize: 11,
+            formatter: '{value} ms'
+          }
         },
-        axisLabel: {
-          fontSize: 11
+        {
+          type: 'value',
+          name: 'FPS / 内存 (MB)',
+          position: 'right',
+          nameTextStyle: {
+            fontSize: 12
+          },
+          axisLabel: {
+            fontSize: 11
+          }
         }
-      },
+      ],
       series: [
         {
           name: '执行时间',
           type,
+          yAxisIndex: 0,
           data: productNames.map(name => {
             const result = data.find(r => r.productName === name)
             return result ? Math.round(result.metrics.executionTime) : 0
@@ -151,6 +167,30 @@ const PerformanceChart: FC = () => {
               ])
             }
           }
+        },
+        {
+          name: 'FPS',
+          type,
+          yAxisIndex: 1,
+          data: productNames.map(name => {
+            const result = data.find(r => r.productName === name)
+            return result ? Math.round(result.metrics.fps || 0) : 0
+          }),
+          itemStyle: {
+            color: '#52c41a'
+          }
+        },
+        {
+          name: '内存占用',
+          type,
+          yAxisIndex: 1,
+          data: productNames.map(name => {
+            const result = data.find(r => r.productName === name)
+            return result ? Math.round(result.metrics.memoryUsage) : 0
+          }),
+          itemStyle: {
+            color: '#fa8c16'
+          }
         }
       ]
     }
@@ -160,10 +200,9 @@ const PerformanceChart: FC = () => {
   const generateRadarOption = (data: TestResult[]): echarts.EChartsOption => {
     const productNames = [...new Set(data.map(r => r.productName))]
 
-    // 计算最大值用于雷达图缩放
     const maxExecTime = Math.max(...data.map(r => r.metrics.executionTime), 1)
     const maxMemory = Math.max(...data.map(r => r.metrics.memoryUsage), 1)
-    const maxFps = 60 // FPS 最大值固定为 60
+    const maxFps = 60
 
     return {
       title: {

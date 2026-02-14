@@ -1,23 +1,41 @@
 import { FC } from 'react'
-import { Row, Col } from 'antd'
+import { Tabs, Card } from 'antd'
 import ProductCard from './ProductCard'
 import { ProductType } from '@/types'
+import { useTestStore } from '@/stores/useTestStore'
 import './ProductDisplayArea.css'
 
-const ProductDisplayArea: FC = () => {
+interface ProductDisplayAreaProps {
+  onContinue?: () => void
+  onRetest?: () => void
+  onStop?: () => void
+}
+
+const ProductDisplayArea: FC<ProductDisplayAreaProps> = ({ onContinue, onRetest, onStop }) => {
+  const { currentProduct, isRunning } = useTestStore()
+
+  const tabItems = [
+    {
+      key: ProductType.SPREADJS,
+      label: 'SpreadJS',
+      children: <ProductCard productType={ProductType.SPREADJS} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />
+    },
+    {
+      key: ProductType.HANDSONTABLE,
+      label: 'Handsontable',
+      children: <ProductCard productType={ProductType.HANDSONTABLE} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />
+    }
+  ]
+
   return (
     <div className="product-display-area">
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
-          <ProductCard productType={ProductType.SPREADJS} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
-          <ProductCard productType={ProductType.UNIVER} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
-          <ProductCard productType={ProductType.HANDSONTABLE} />
-        </Col>
-      </Row>
+      <Card>
+        <Tabs
+          activeKey={isRunning && currentProduct ? currentProduct : ProductType.SPREADJS}
+          items={tabItems}
+          size="large"
+        />
+      </Card>
     </div>
   )
 }

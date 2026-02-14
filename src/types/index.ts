@@ -45,6 +45,16 @@ export interface PerformanceMetrics {
 }
 
 /**
+ * 单次运行结果
+ */
+export interface RunResult {
+  runNumber: number;
+  executionTime: number;
+  memoryUsage: number;
+  fps: number;
+}
+
+/**
  * 测试配置
  */
 export interface TestConfig {
@@ -60,7 +70,9 @@ export interface TestConfig {
 export interface TestResult {
   productName: ProductType;
   scenario: TestScenario;
-  metrics: PerformanceMetrics;
+  metrics: PerformanceMetrics; // 平均值
+  runs: RunResult[]; // 每次运行的详细结果
+  initializationTime: number; // 初始化时间（不计入测试时间）
   success: boolean;
   error?: string;
 }

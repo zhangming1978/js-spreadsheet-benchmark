@@ -1,6 +1,6 @@
-import { FC, useRef, useState } from 'react'
+import { FC, MutableRefObject, useState } from 'react'
 import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal } from 'antd'
-import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, ReloadOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
 import { TestEngine } from '@/core/engine'
@@ -8,7 +8,11 @@ import './TestControlPanel.css'
 
 const { Option } = Select
 
-const TestControlPanel: FC = () => {
+interface TestControlPanelProps {
+  testEngineRef: MutableRefObject<TestEngine | null>
+}
+
+const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   // 从 store 获取状态和方法
   const {
     selectedScenario,
@@ -19,11 +23,10 @@ const TestControlPanel: FC = () => {
     setSelectedScenario,
     setDataSize,
     setCooldownTime,
-    setSelectedProducts
+    setSelectedProducts,
+    reset,
+    clearResults
   } = useTestStore()
-
-  // 测试引擎引用
-  const testEngineRef = useRef<TestEngine | null>(null)
 
   // 测试前警告对话框状态
   const [showWarningModal, setShowWarningModal] = useState(false)
@@ -69,10 +72,11 @@ const TestControlPanel: FC = () => {
 
   // 数据规模选项
   const dataSizeOptions = [
-    { value: 1000, label: '1千行 (小规模)' },
-    { value: 10000, label: '1万行 (中规模)' },
-    { value: 50000, label: '5万行 (大规模)' },
-    { value: 100000, label: '10万行 (超大规模)' }
+    { value: 5000, label: '5千行 ' },
+    { value: 10000, label: '1万行' },
+    { value: 50000, label: '5万行' },
+    { value: 100000, label: '10万行' },
+    { value: 500000, label: '50万行' }
   ]
 
   // 冷却时间选项
@@ -86,7 +90,6 @@ const TestControlPanel: FC = () => {
   // 产品选项
   const productOptions = [
     { value: ProductType.SPREADJS, label: 'SpreadJS' },
-    { value: ProductType.UNIVER, label: 'Univer' },
     { value: ProductType.HANDSONTABLE, label: 'Handsontable' }
   ]
 
@@ -107,8 +110,8 @@ const TestControlPanel: FC = () => {
 
   // 处理产品选择变化
   const handleProductsChange = (checkedValues: ProductType[]) => {
-    if (checkedValues.length < 2) {
-      message.warning('至少需要选择 2 个产品进行对比')
+    if (checkedValues.length < 1) {
+      message.warning('至少需要选择 1 个产品进行测试')
       return
     }
     setSelectedProducts(checkedValues)
@@ -116,8 +119,8 @@ const TestControlPanel: FC = () => {
 
   // 处理开始测试按钮点击
   const handleStartTest = () => {
-    if (selectedProducts.length < 2) {
-      message.error('请至少选择 2 个产品进行对比')
+    if (selectedProducts.length < 1) {
+      message.error('请至少选择 1 个产品进行测试')
       return
     }
     // 显示警告对话框
@@ -139,10 +142,8 @@ const TestControlPanel: FC = () => {
 
       testEngineRef.current = engine
 
-      // 开始测试
-      message.info('开始性能测试...')
+      // 开始测试（消息由 TestEngine 内部管理）
       await engine.start()
-      message.success('测试完成！')
     } catch (error) {
       console.error('[TestControlPanel] Test failed:', error)
       message.error('测试失败：' + (error instanceof Error ? error.message : String(error)))
@@ -157,6 +158,13 @@ const TestControlPanel: FC = () => {
       testEngineRef.current.stop()
       message.info('正在停止测试...')
     }
+  }
+
+  // 处理重置
+  const handleReset = () => {
+    reset()
+    clearResults()
+    message.success('已重置到初始状态')
   }
 
   return (
@@ -189,7 +197,7 @@ const TestControlPanel: FC = () => {
             </Select>
           </div>
         </Col>
-        <Col xs={24} sm={12} md={4} lg={3} xl={4}>
+        <Col xs={24} sm={12} md={4} lg={3} xl={3}>
           <div className="control-item">
             <label className="control-label">数据规模</label>
             <Select
@@ -230,7 +238,7 @@ const TestControlPanel: FC = () => {
             </Select>
           </div>
         </Col>
-        <Col xs={24} sm={12} md={6} lg={7} xl={8}>
+        <Col xs={24} sm={12} md={6} lg={6} xl={8}>
           <div className="control-item">
             <label className="control-label">测试产品</label>
             <Checkbox.Group
@@ -241,12 +249,12 @@ const TestControlPanel: FC = () => {
             />
           </div>
         </Col>
-        <Col xs={24} sm={24} md={24} lg={6} xl={6}>
+        <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <div className="control-item control-item-buttons">
-            <Space size="small">
+            <Space size={4}>
               <Button
                 type="primary"
-                size="middle"
+                size="small"
                 icon={<PlayCircleOutlined />}
                 onClick={handleStartTest}
                 disabled={isRunning}
@@ -255,12 +263,20 @@ const TestControlPanel: FC = () => {
               </Button>
               <Button
                 danger
-                size="middle"
+                size="small"
                 icon={<StopOutlined />}
                 onClick={handleStopTest}
                 disabled={!isRunning}
               >
                 停止
+              </Button>
+              <Button
+                size="small"
+                icon={<ReloadOutlined />}
+                onClick={handleReset}
+                disabled={isRunning}
+              >
+                重置
               </Button>
             </Space>
           </div>

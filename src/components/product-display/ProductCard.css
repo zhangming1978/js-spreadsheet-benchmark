@@ -10,14 +10,72 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 0;
 }
 
-.product-card-title {
+.product-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+.product-info {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: normal;
+}
+
+.product-name {
+  font-size: 14px;
+}
+
+.product-version {
+  font-size: 13px;
+  color: #666;
+  font-weight: normal;
+}
+
+.product-scenario {
+  font-size: 13px;
+  color: #666;
+  font-weight: normal;
+}
+
+.performance-stats {
+  display: flex;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.stat-value {
   font-weight: 600;
+  font-size: 14px;
+}
+
+.stat-unit {
+  color: #999;
+  font-size: 12px;
+}
+
+.control-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.test-result-info {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: #666;
 }
 
 .product-container {

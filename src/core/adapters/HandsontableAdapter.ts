@@ -154,9 +154,9 @@ export class HandsontableAdapter extends ProductAdapter {
 
   // ==================== 性能监控 ====================
   getMemoryUsage(): number {
-    // 使用浏览器 Performance API 获取内存占用
+    // 使用浏览器 Performance API 获取内存占用（返回 MB）
     const memory = (performance as any).memory
-    return memory ? memory.usedJSHeapSize : 0
+    return memory ? memory.usedJSHeapSize / (1024 * 1024) : 0
   }
 
   getFPS(): number {

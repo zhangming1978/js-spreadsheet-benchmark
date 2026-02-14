@@ -4,6 +4,10 @@
   overflow-x: hidden;
 }
 
+.product-display-area .ant-card-body {
+  padding: 8px 16px 8px 16px;
+}
+
 .product-display-area .ant-row {
   height: 100%;
 }

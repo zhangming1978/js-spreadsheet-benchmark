@@ -44,6 +44,10 @@ interface TestState {
   currentFPS: number
   currentMemory: number
 
+  // 测试确认状态
+  waitingForConfirmation: boolean
+  currentTestResult: TestResult | null
+
   // Actions
   setStatus: (status: TestStatus) => void
   setCurrentScenario: (scenario: TestScenario | null) => void
@@ -60,6 +64,8 @@ interface TestState {
   clearResults: () => void
   setCurrentFPS: (fps: number) => void
   setCurrentMemory: (memory: number) => void
+  setWaitingForConfirmation: (waiting: boolean) => void
+  setCurrentTestResult: (result: TestResult | null) => void
   reset: () => void
 }
 
@@ -70,9 +76,9 @@ export const useTestStore = create<TestState>((set) => ({
   currentProduct: null,
   isRunning: false,
   config: null,
-  selectedProducts: [ProductType.SPREADJS, ProductType.UNIVER, ProductType.HANDSONTABLE],
+  selectedProducts: [ProductType.SPREADJS, ProductType.HANDSONTABLE],
   selectedScenario: TestScenario.DATA_LOADING,
-  dataSize: 10000,
+  dataSize: 5000,
   cooldownTime: 5,
   progress: {
     totalTests: 0,
@@ -84,6 +90,8 @@ export const useTestStore = create<TestState>((set) => ({
   results: [],
   currentFPS: 0,
   currentMemory: 0,
+  waitingForConfirmation: false,
+  currentTestResult: null,
 
   // Actions
   setStatus: (status) => set({ status }),
@@ -112,6 +120,8 @@ export const useTestStore = create<TestState>((set) => ({
   clearResults: () => set({ results: [], productStatuses: new Map() }),
   setCurrentFPS: (fps) => set({ currentFPS: fps }),
   setCurrentMemory: (memory) => set({ currentMemory: memory }),
+  setWaitingForConfirmation: (waiting) => set({ waitingForConfirmation: waiting }),
+  setCurrentTestResult: (result) => set({ currentTestResult: result }),
   reset: () => set({
     status: TestStatus.IDLE,
     currentScenario: null,
@@ -127,6 +137,8 @@ export const useTestStore = create<TestState>((set) => ({
       percentage: 0
     },
     currentFPS: 0,
-    currentMemory: 0
+    currentMemory: 0,
+    waitingForConfirmation: false,
+    currentTestResult: null
   })
 }))

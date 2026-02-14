@@ -21,9 +21,6 @@ const HomePage: FC = () => {
               <div className="control-section">
                 <TestControlPanel />
               </div>
-              <div className="monitor-section">
-                <PerformanceMonitor />
-              </div>
               <div className="display-section">
                 <ProductDisplayArea />
               </div>
@@ -41,6 +38,8 @@ const HomePage: FC = () => {
           </Col>
         </Row>
       </Content>
+      {/* 浮动性能监控对话框 */}
+      <PerformanceMonitor />
     </Layout>
   )
 }

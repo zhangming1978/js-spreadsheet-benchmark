@@ -1,12 +1,12 @@
 import { FC, useEffect, useState } from 'react'
-import { Card, Row, Col, Statistic, Progress } from 'antd'
+import { Modal, Row, Col, Statistic, Progress, Card } from 'antd'
 import { DashboardOutlined, ThunderboltOutlined, DatabaseOutlined } from '@ant-design/icons'
 import { useTestStore } from '@/stores/useTestStore'
 import './PerformanceMonitor.css'
 
 /**
- * 实时性能指标监控组件
- * 显示当前测试的 FPS、内存使用、CPU 使用率等实时指标
+ * 实时性能指标监控组件（浮动对话框）
+ * 只在测试运行时显示，显示当前测试的 FPS、内存使用等实时指标
  */
 const PerformanceMonitor: FC = () => {
   const { isRunning, currentProduct } = useTestStore()
@@ -80,114 +80,84 @@ const PerformanceMonitor: FC = () => {
   }
 
   return (
-    <Card
-      className="performance-monitor"
+    <Modal
       title={
         <span>
           <DashboardOutlined style={{ marginRight: 8 }} />
           实时性能监控
+          {currentProduct && <span style={{ marginLeft: 16, fontWeight: 'normal', fontSize: 14 }}>正在测试: <strong>{currentProduct}</strong></span>}
         </span>
       }
-      size="small"
+      open={isRunning}
+      footer={null}
+      closable={false}
+      maskClosable={false}
+      width={800}
+      style={{ top: 20 }}
+      className="performance-monitor-modal"
     >
-      {!isRunning && (
-        <div className="monitor-placeholder">
-          <p>测试未运行</p>
-          <p className="monitor-hint">点击"开始测试"后将显示实时性能指标</p>
-        </div>
-      )}
-
-      {isRunning && (
-        <>
-          {currentProduct && (
-            <div className="current-product">
-              正在测试: <strong>{currentProduct}</strong>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={12}>
+          <Card className="metric-card" size="small">
+            <Statistic
+              title={
+                <span>
+                  <ThunderboltOutlined style={{ marginRight: 4 }} />
+                  帧率 (FPS)
+                </span>
+              }
+              value={fps}
+              suffix="fps"
+              valueStyle={{
+                color: fps >= 50 ? '#3f8600' : fps >= 30 ? '#faad14' : '#cf1322',
+                fontSize: '28px'
+              }}
+            />
+            <Progress
+              percent={Math.min(100, (fps / 60) * 100)}
+              status={getFpsStatus(fps)}
+              showInfo={false}
+              strokeWidth={8}
+            />
+            <div className="metric-hint">
+              {fps >= 50 && '流畅'}
+              {fps >= 30 && fps < 50 && '一般'}
+              {fps < 30 && '卡顿'}
             </div>
-          )}
+          </Card>
+        </Col>
 
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={12} md={8}>
-              <Card className="metric-card" size="small">
-                <Statistic
-                  title={
-                    <span>
-                      <ThunderboltOutlined style={{ marginRight: 4 }} />
-                      帧率 (FPS)
-                    </span>
-                  }
-                  value={fps}
-                  suffix="fps"
-                  valueStyle={{
-                    color: fps >= 50 ? '#3f8600' : fps >= 30 ? '#faad14' : '#cf1322',
-                    fontSize: '28px'
-                  }}
-                />
-                <Progress
-                  percent={Math.min(100, (fps / 60) * 100)}
-                  status={getFpsStatus(fps)}
-                  showInfo={false}
-                  strokeWidth={8}
-                />
-                <div className="metric-hint">
-                  {fps >= 50 && '流畅'}
-                  {fps >= 30 && fps < 50 && '一般'}
-                  {fps < 30 && '卡顿'}
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={24} sm={12} md={8}>
-              <Card className="metric-card" size="small">
-                <Statistic
-                  title={
-                    <span>
-                      <DatabaseOutlined style={{ marginRight: 4 }} />
-                      内存使用
-                    </span>
-                  }
-                  value={memory}
-                  suffix={`MB / ${memoryLimit} MB`}
-                  valueStyle={{
-                    color: memoryPercent < 60 ? '#3f8600' : memoryPercent < 80 ? '#faad14' : '#cf1322',
-                    fontSize: '28px'
-                  }}
-                />
-                <Progress
-                  percent={memoryPercent}
-                  status={getMemoryStatus(memoryPercent)}
-                  showInfo={false}
-                  strokeWidth={8}
-                />
-                <div className="metric-hint">
-                  {memoryPercent < 60 && '正常'}
-                  {memoryPercent >= 60 && memoryPercent < 80 && '偏高'}
-                  {memoryPercent >= 80 && '过高'}
-                </div>
-              </Card>
-            </Col>
-
-            <Col xs={24} sm={24} md={8}>
-              <Card className="metric-card" size="small">
-                <div className="metric-info">
-                  <div className="info-item">
-                    <span className="info-label">浏览器:</span>
-                    <span className="info-value">{navigator.userAgent.match(/Chrome\/[\d.]+|Firefox\/[\d.]+|Safari\/[\d.]+/)?.[0] || 'Unknown'}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">平台:</span>
-                    <span className="info-value">{navigator.platform}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">CPU 核心:</span>
-                    <span className="info-value">{navigator.hardwareConcurrency || 'N/A'}</span>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </>
-      )}
-    </Card>
+        <Col xs={24} sm={12}>
+          <Card className="metric-card" size="small">
+            <Statistic
+              title={
+                <span>
+                  <DatabaseOutlined style={{ marginRight: 4 }} />
+                  内存使用
+                </span>
+              }
+              value={memory}
+              suffix={`MB / ${memoryLimit} MB`}
+              valueStyle={{
+                color: memoryPercent < 60 ? '#3f8600' : memoryPercent < 80 ? '#faad14' : '#cf1322',
+                fontSize: '28px'
+              }}
+            />
+            <Progress
+              percent={memoryPercent}
+              status={getMemoryStatus(memoryPercent)}
+              showInfo={false}
+              strokeWidth={8}
+            />
+            <div className="metric-hint">
+              {memoryPercent < 60 && '正常'}
+              {memoryPercent >= 60 && memoryPercent < 80 && '偏高'}
+              {memoryPercent >= 80 && '过高'}
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </Modal>
   )
 }
 

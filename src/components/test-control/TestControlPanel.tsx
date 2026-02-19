@@ -1,6 +1,6 @@
-import { FC, MutableRefObject, useState } from 'react'
-import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal } from 'antd'
-import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, ReloadOutlined } from '@ant-design/icons'
+import { FC, MutableRefObject, useState, useMemo } from 'react'
+import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal, Alert } from 'antd'
+import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
 import { TestEngine } from '@/core/engine'
@@ -41,32 +41,32 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     {
       value: TestScenario.SCROLLING,
       label: '滚动性能',
-      description: '测试方法：在大数据集中进行快速滚动操作。评价标准：滚动流畅度、FPS、滚动响应延迟。'
+      description: '测试方法：加载数据后进行10步滚动操作，每步间隔50ms。评价标准：滚动流畅度、FPS、滚动响应延迟。'
     },
     {
       value: TestScenario.EDITING,
       label: '编辑性能',
-      description: '测试方法：批量编辑单元格内容、自动填充等操作。评价标准：编辑响应时间、批量操作耗时、界面流畅度。'
+      description: '测试方法：加载数据后批量编辑100个单元格内容。评价标准：编辑响应时间、批量操作耗时、界面流畅度。'
     },
     {
       value: TestScenario.FORMULA,
       label: '公式计算性能',
-      description: '测试方法：设置复杂公式并触发重新计算。评价标准：公式计算耗时、依赖链更新速度、计算准确性。'
+      description: '测试方法：加载包含公式的数据并触发重新计算。评价标准：公式计算耗时、依赖链更新速度、计算准确性。'
     },
     {
       value: TestScenario.RENDERING,
       label: '渲染性能',
-      description: '测试方法：测试大规模数据的初始渲染和重绘性能。评价标准：首屏渲染时间、重绘耗时、FPS。'
+      description: '测试方法：加载大规模数据并测试初始渲染性能。评价标准：首屏渲染时间、渲染完成耗时、FPS。'
     },
     {
       value: TestScenario.MEMORY,
       label: '内存占用',
-      description: '测试方法：加载数据后监控内存使用情况。评价标准：初始内存占用、峰值内存、内存释放效率。'
+      description: '测试方法：加载数据后等待500ms监控内存使用情况。评价标准：初始内存占用、峰值内存、内存稳定性。'
     },
     {
       value: TestScenario.EXCEL_IMPORT,
       label: 'Excel导入性能',
-      description: '测试方法：导入标准Excel文件并解析。评价标准：文件解析耗时、数据加载速度、格式还原准确性。'
+      description: '测试方法：使用模拟数据测试数据加载性能（注：当前版本使用模拟数据，未实现真实Excel文件导入）。评价标准：数据加载速度、渲染性能。'
     }
   ]
 
@@ -90,6 +90,7 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   // 产品选项
   const productOptions = [
     { value: ProductType.SPREADJS, label: 'SpreadJS' },
+    { value: ProductType.UNIVER, label: 'Univer' },
     { value: ProductType.HANDSONTABLE, label: 'Handsontable' }
   ]
 
@@ -145,7 +146,7 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       // 开始测试（消息由 TestEngine 内部管理）
       await engine.start()
     } catch (error) {
-      console.error('[TestControlPanel] Test failed:', error)
+      console.error('[TestControlPanel] 测试失败:', error)
       message.error('测试失败：' + (error instanceof Error ? error.message : String(error)))
     } finally {
       testEngineRef.current = null
@@ -166,6 +167,12 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     clearResults()
     message.success('已重置到初始状态')
   }
+
+  // 获取当前选中场景的描述
+  const currentScenarioDescription = useMemo(() => {
+    const scenario = scenarioOptions.find(opt => opt.value === selectedScenario)
+    return scenario?.description || ''
+  }, [selectedScenario])
 
   return (
     <Card className="test-control-panel" title="测试控制面板" size="small">
@@ -282,6 +289,22 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
           </div>
         </Col>
       </Row>
+
+      {/* 当前场景测试方法说明 */}
+      {currentScenarioDescription && (
+        <Alert
+          description={currentScenarioDescription}
+          type="info"
+          showIcon
+          style={{
+            marginTop: 12,
+            padding: '8px 12px',
+            fontSize: 12,
+            lineHeight: 1.4
+          }}
+          icon={<InfoCircleOutlined style={{ fontSize: 14 }} />}
+        />
+      )}
 
       {/* 测试前警告对话框 */}
       <Modal

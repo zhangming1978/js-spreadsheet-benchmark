@@ -44,9 +44,15 @@ interface TestState {
   currentFPS: number
   currentMemory: number
 
+  // 测试运行进度
+  currentRun: number
+  totalRuns: number
+  testStage: string
+
   // 测试确认状态
   waitingForConfirmation: boolean
   currentTestResult: TestResult | null
+  isLastTest: boolean
 
   // Actions
   setStatus: (status: TestStatus) => void
@@ -64,8 +70,12 @@ interface TestState {
   clearResults: () => void
   setCurrentFPS: (fps: number) => void
   setCurrentMemory: (memory: number) => void
+  setCurrentRun: (run: number) => void
+  setTotalRuns: (total: number) => void
+  setTestStage: (stage: string) => void
   setWaitingForConfirmation: (waiting: boolean) => void
   setCurrentTestResult: (result: TestResult | null) => void
+  setIsLastTest: (isLast: boolean) => void
   reset: () => void
 }
 
@@ -76,7 +86,7 @@ export const useTestStore = create<TestState>((set) => ({
   currentProduct: null,
   isRunning: false,
   config: null,
-  selectedProducts: [ProductType.SPREADJS, ProductType.HANDSONTABLE],
+  selectedProducts: [ProductType.SPREADJS, ProductType.UNIVER, ProductType.HANDSONTABLE],
   selectedScenario: TestScenario.DATA_LOADING,
   dataSize: 5000,
   cooldownTime: 5,
@@ -90,8 +100,12 @@ export const useTestStore = create<TestState>((set) => ({
   results: [],
   currentFPS: 0,
   currentMemory: 0,
+  currentRun: 0,
+  totalRuns: 3,
+  testStage: '',
   waitingForConfirmation: false,
   currentTestResult: null,
+  isLastTest: false,
 
   // Actions
   setStatus: (status) => set({ status }),
@@ -120,8 +134,12 @@ export const useTestStore = create<TestState>((set) => ({
   clearResults: () => set({ results: [], productStatuses: new Map() }),
   setCurrentFPS: (fps) => set({ currentFPS: fps }),
   setCurrentMemory: (memory) => set({ currentMemory: memory }),
+  setCurrentRun: (run) => set({ currentRun: run }),
+  setTotalRuns: (total) => set({ totalRuns: total }),
+  setTestStage: (stage) => set({ testStage: stage }),
   setWaitingForConfirmation: (waiting) => set({ waitingForConfirmation: waiting }),
   setCurrentTestResult: (result) => set({ currentTestResult: result }),
+  setIsLastTest: (isLast) => set({ isLastTest: isLast }),
   reset: () => set({
     status: TestStatus.IDLE,
     currentScenario: null,
@@ -138,7 +156,11 @@ export const useTestStore = create<TestState>((set) => ({
     },
     currentFPS: 0,
     currentMemory: 0,
+    currentRun: 0,
+    totalRuns: 3,
+    testStage: '',
     waitingForConfirmation: false,
-    currentTestResult: null
+    currentTestResult: null,
+    isLastTest: false
   })
 }))

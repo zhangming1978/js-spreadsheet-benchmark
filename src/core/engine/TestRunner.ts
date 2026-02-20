@@ -32,17 +32,32 @@ export class TestRunner {
     const numRuns = 3 // 运行3次
 
     try {
-      // 步骤1: 初始化产品（只初始化一次，不计入测试时间）
+      // 步骤1: 初始化产品(只初始化一次,不计入测试时间)
       console.log(`[TestRunner] Initializing adapter: ${this.adapter.getProductName()}`)
+      const store = useTestStore.getState()
+      store.setTestStage('初始化中...')
+      store.setTotalRuns(numRuns)
+
+      // 延迟一下，让用户看到"初始化中..."的提示
+      await this.sleep(800)
+
       const initStartTime = performance.now()
       await this.adapter.initialize(this.container)
       const initEndTime = performance.now()
       initializationTime = initEndTime - initStartTime
       console.log(`[TestRunner] Adapter initialized in ${initializationTime.toFixed(2)}ms`)
 
+      // 初始化完成后，延迟一下再开始测试
+      await this.sleep(500)
+
       // 步骤2: 运行测试3次
       for (let runNumber = 1; runNumber <= numRuns; runNumber++) {
         console.log(`[TestRunner] ========== Run ${runNumber}/${numRuns} ==========`)
+        store.setCurrentRun(runNumber)
+        store.setTestStage(`运行测试 ${runNumber}/${numRuns}`)
+
+        // 延迟一下，让用户看到当前运行的提示
+        await this.sleep(600)
 
         // 执行测试场景
         console.log(`[TestRunner] Executing test scenario: ${scenario}`)
@@ -103,12 +118,13 @@ export class TestRunner {
           fps
         })
 
-        // 如果不是最后一次运行，清理数据准备下一次
+        // 每次运行后都清理数据，确保测试环境一致
+        console.log(`[TestRunner] Cleaning up after run ${runNumber}...`)
+        await this.adapter.loadData([[]])
+
+        // 如果不是最后一次运行，延迟一下让用户看到结果
         if (runNumber < numRuns) {
-          console.log(`[TestRunner] Cleaning up for next run...`)
-          // 清空数据但不销毁适配器
-          await this.adapter.loadData([[]])
-          await this.sleep(500) // 短暂等待，让内存稳定
+          await this.sleep(800)
         }
       }
 
@@ -123,6 +139,8 @@ export class TestRunner {
       const store = useTestStore.getState()
       store.setCurrentFPS(0)
       store.setCurrentMemory(0)
+      store.setCurrentRun(0)
+      store.setTestStage('')
     }
 
     // 计算平均值
@@ -139,6 +157,7 @@ export class TestRunner {
     const result: TestResult = {
       productName: this.adapter.getProductType() as ProductType,
       scenario,
+      dataSize,
       metrics: {
         productName: this.adapter.getProductType() as ProductType,
         scenario,
@@ -190,11 +209,10 @@ export class TestRunner {
     const data = DataGenerator.generateTableData(dataSize)
     await this.adapter.loadData(data)
 
-    // 批量编辑单元格
+    // 批量编辑单元格 - 使用 setRangeValues 进行批量操作，避免多次重绘
     const editCount = Math.min(100, dataSize)
-    for (let i = 0; i < editCount; i++) {
-      this.adapter.setCellValue(i, 1, `编辑${i}`)
-    }
+    const values = Array.from({ length: editCount }, (_, i) => [`编辑${i}`])
+    this.adapter.setRangeValues(0, 1, values)
   }
 
   /**

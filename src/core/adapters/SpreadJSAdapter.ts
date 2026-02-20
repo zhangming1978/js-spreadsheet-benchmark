@@ -23,8 +23,8 @@ export class SpreadJSAdapter extends ProductAdapter {
   }
 
   getVersion(): string {
-    // 获取 SpreadJS 实际版本
-    return GC.Spread.Sheets.VERSION || '18.2.5'
+    // 返回 SpreadJS 版本
+    return '19.0.1'
   }
 
   // ==================== 生命周期 ====================
@@ -45,7 +45,7 @@ export class SpreadJSAdapter extends ProductAdapter {
       this.sheet.name('Performance Test')
     }
 
-    console.log('[SpreadJSAdapter] Initialized with SpreadJS', this.getVersion())
+    console.log('[SpreadJSAdapter] 已使用 SpreadJS 初始化', this.getVersion())
   }
 
   async destroy(): Promise<void> {
@@ -58,7 +58,7 @@ export class SpreadJSAdapter extends ProductAdapter {
 
     this.workbook = null
     this.sheet = null
-    console.log('[SpreadJSAdapter] Destroyed')
+    console.log('[SpreadJSAdapter] 已销毁')
   }
 
   // ==================== 数据操作 ====================
@@ -91,7 +91,7 @@ export class SpreadJSAdapter extends ProductAdapter {
         this.workbook.resumePaint()
       }
     }
-    console.log(`[SpreadJSAdapter] Loaded ${data.length - 1} rows using data binding with performance optimization`)
+    console.log(`[SpreadJSAdapter] 使用数据绑定和性能优化加载了 ${data.length - 1} 行数据`)
   }
 
   getData(): any[][] {
@@ -109,7 +109,7 @@ export class SpreadJSAdapter extends ProductAdapter {
       const colCount = this.sheet.getColumnCount()
       this.sheet.clear(0, 0, rowCount, colCount, GC.Spread.Sheets.SheetArea.viewport, GC.Spread.Sheets.StorageType.data)
     }
-    console.log('[SpreadJSAdapter] Data cleared')
+    console.log('[SpreadJSAdapter] 数据已清空')
   }
 
   // ==================== 编辑操作 ====================
@@ -127,8 +127,14 @@ export class SpreadJSAdapter extends ProductAdapter {
   }
 
   setRangeValues(startRow: number, startCol: number, values: any[][]): void {
-    if (this.sheet) {
-      this.sheet.setArray(startRow, startCol, values)
+    if (this.sheet && this.workbook) {
+      // 性能优化：挂起绘制，批量设置后再恢复
+      this.workbook.suspendPaint()
+      try {
+        this.sheet.setArray(startRow, startCol, values)
+      } finally {
+        this.workbook.resumePaint()
+      }
     }
   }
 
@@ -140,7 +146,10 @@ export class SpreadJSAdapter extends ProductAdapter {
         endRow - startRow + 1,
         endCol - startCol + 1
       )
-      this.sheet.fillAuto(range, fillRange, { fillType: GC.Spread.Sheets.Fill.FillType.auto })
+      this.sheet.fillAuto(range, fillRange, {
+        fillType: GC.Spread.Sheets.Fill.FillType.auto,
+        series: GC.Spread.Sheets.Fill.FillSeries.column
+      })
     }
   }
 
@@ -152,8 +161,9 @@ export class SpreadJSAdapter extends ProductAdapter {
   }
 
   recalculate(): void {
-    if (this.workbook) {
-      this.workbook.recalcAll()
+    if (this.sheet) {
+      // 触发工作表重新计算
+      this.sheet.recalcAll()
     }
   }
 

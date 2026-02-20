@@ -1,0 +1,26 @@
+.results-comparison {
+  padding: 24px;
+}
+
+.results-comparison .ant-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-comparison .ant-statistic-title {
+  font-size: 14px;
+  color: #666;
+}
+
+.results-comparison .ant-statistic-content {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.results-comparison .ant-table {
+  margin-top: 16px;
+}
+
+.results-comparison .ant-table-thead > tr > th {
+  background-color: #fafafa;
+  font-weight: 600;
+}

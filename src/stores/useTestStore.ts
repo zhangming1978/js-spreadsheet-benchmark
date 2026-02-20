@@ -54,6 +54,10 @@ interface TestState {
   currentTestResult: TestResult | null
   isLastTest: boolean
 
+  // 自动继续倒计时
+  autoContinueCountdown: number
+  autoContinueEnabled: boolean
+
   // Actions
   setStatus: (status: TestStatus) => void
   setCurrentScenario: (scenario: TestScenario | null) => void
@@ -76,6 +80,8 @@ interface TestState {
   setWaitingForConfirmation: (waiting: boolean) => void
   setCurrentTestResult: (result: TestResult | null) => void
   setIsLastTest: (isLast: boolean) => void
+  setAutoContinueCountdown: (countdown: number) => void
+  setAutoContinueEnabled: (enabled: boolean) => void
   reset: () => void
 }
 
@@ -88,7 +94,7 @@ export const useTestStore = create<TestState>((set) => ({
   config: null,
   selectedProducts: [ProductType.SPREADJS, ProductType.UNIVER, ProductType.HANDSONTABLE],
   selectedScenario: TestScenario.DATA_LOADING,
-  dataSize: 5000,
+  dataSize: 10000,
   cooldownTime: 5,
   progress: {
     totalTests: 0,
@@ -106,6 +112,8 @@ export const useTestStore = create<TestState>((set) => ({
   waitingForConfirmation: false,
   currentTestResult: null,
   isLastTest: false,
+  autoContinueCountdown: 0,
+  autoContinueEnabled: true,
 
   // Actions
   setStatus: (status) => set({ status }),
@@ -140,6 +148,8 @@ export const useTestStore = create<TestState>((set) => ({
   setWaitingForConfirmation: (waiting) => set({ waitingForConfirmation: waiting }),
   setCurrentTestResult: (result) => set({ currentTestResult: result }),
   setIsLastTest: (isLast) => set({ isLastTest: isLast }),
+  setAutoContinueCountdown: (countdown) => set({ autoContinueCountdown: countdown }),
+  setAutoContinueEnabled: (enabled) => set({ autoContinueEnabled: enabled }),
   reset: () => set({
     status: TestStatus.IDLE,
     currentScenario: null,
@@ -161,6 +171,8 @@ export const useTestStore = create<TestState>((set) => ({
     testStage: '',
     waitingForConfirmation: false,
     currentTestResult: null,
-    isLastTest: false
+    isLastTest: false,
+    autoContinueCountdown: 0,
+    autoContinueEnabled: true
   })
 }))

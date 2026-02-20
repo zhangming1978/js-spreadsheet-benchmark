@@ -1,9 +1,9 @@
-import { FC, useEffect, useRef, useState } from 'react'
-import { Card, Select, Empty } from 'antd'
+import { FC, useEffect, useRef, useState, useMemo } from 'react'
+import { Card, Select, Empty, Space } from 'antd'
 import { BarChartOutlined } from '@ant-design/icons'
 import * as echarts from 'echarts'
 import { useTestStore } from '@/stores/useTestStore'
-import type { TestResult } from '@/types'
+import type { TestResult, TestScenario } from '@/types'
 import './PerformanceChart.css'
 
 const { Option } = Select
@@ -19,6 +19,35 @@ const PerformanceChart: FC = () => {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstanceRef = useRef<echarts.ECharts | null>(null)
   const [chartType, setChartType] = useState<ChartType>('bar')
+  const [selectedScenario, setSelectedScenario] = useState<TestScenario | 'all'>('all')
+
+  // 获取所有唯一的场景
+  const scenarios = useMemo(() => {
+    const uniqueScenarios = Array.from(new Set(results.map(r => r.scenario)))
+    return uniqueScenarios
+  }, [results])
+
+  // 根据选择的场景筛选结果
+  const filteredResults = useMemo(() => {
+    if (selectedScenario === 'all') {
+      return results
+    }
+    return results.filter(r => r.scenario === selectedScenario)
+  }, [results, selectedScenario])
+
+  // 获取场景名称
+  const getScenarioName = (scenario: string) => {
+    const scenarioMap: Record<string, string> = {
+      'data-loading': '数据加载',
+      'scrolling': '滚动性能',
+      'editing': '编辑性能',
+      'formula': '公式计算',
+      'rendering': '渲染性能',
+      'memory': '内存占用',
+      'excel-import': 'Excel导入'
+    }
+    return scenarioMap[scenario] || scenario
+  }
 
   // 初始化图表
   useEffect(() => {
@@ -44,16 +73,16 @@ const PerformanceChart: FC = () => {
 
   // 更新图表数据
   useEffect(() => {
-    if (!chartInstanceRef.current || results.length === 0) {
+    if (!chartInstanceRef.current || filteredResults.length === 0) {
       return
     }
 
     // 确保图表容器可见后调整大小
     chartInstanceRef.current.resize()
 
-    const option = generateChartOption(results, chartType)
+    const option = generateChartOption(filteredResults, chartType)
     chartInstanceRef.current.setOption(option, true)
-  }, [results, chartType])
+  }, [filteredResults, chartType])
 
   // 生成图表配置
   const generateChartOption = (data: TestResult[], type: ChartType): echarts.EChartsOption => {
@@ -151,6 +180,13 @@ const PerformanceChart: FC = () => {
             const result = data.find(r => r.productName === name)
             return result ? Math.round(result.metrics.executionTime) : 0
           }),
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c} ms',
+            fontSize: 11,
+            color: '#666'
+          },
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: '#83bff6' },
@@ -176,6 +212,13 @@ const PerformanceChart: FC = () => {
             const result = data.find(r => r.productName === name)
             return result ? Math.round(result.metrics.fps || 0) : 0
           }),
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c} fps',
+            fontSize: 11,
+            color: '#666'
+          },
           itemStyle: {
             color: '#52c41a'
           }
@@ -188,6 +231,13 @@ const PerformanceChart: FC = () => {
             const result = data.find(r => r.productName === name)
             return result ? Math.round(result.metrics.memoryUsage) : 0
           }),
+          label: {
+            show: true,
+            position: 'top',
+            formatter: '{c} MB',
+            fontSize: 11,
+            color: '#666'
+          },
           itemStyle: {
             color: '#fa8c16'
           }
@@ -272,21 +322,36 @@ const PerformanceChart: FC = () => {
             <BarChartOutlined style={{ marginRight: 8 }} />
             性能数据可视化
           </span>
-          <Select
-            value={chartType}
-            onChange={setChartType}
-            size="small"
-            style={{ width: 100 }}
-          >
-            <Option value="bar">柱状图</Option>
-            <Option value="line">折线图</Option>
-            <Option value="radar">雷达图</Option>
-          </Select>
+          <Space>
+            {scenarios.length > 1 && (
+              <Select
+                value={selectedScenario}
+                onChange={setSelectedScenario}
+                size="small"
+                style={{ width: 120 }}
+              >
+                <Option value="all">全部场景</Option>
+                {scenarios.map(s => (
+                  <Option key={s} value={s}>{getScenarioName(s)}</Option>
+                ))}
+              </Select>
+            )}
+            <Select
+              value={chartType}
+              onChange={setChartType}
+              size="small"
+              style={{ width: 100 }}
+            >
+              <Option value="bar">柱状图</Option>
+              <Option value="line">折线图</Option>
+              <Option value="radar">雷达图</Option>
+            </Select>
+          </Space>
         </div>
       }
       size="small"
     >
-      {results.length === 0 && (
+      {filteredResults.length === 0 && (
         <Empty
           description="暂无测试数据"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -296,7 +361,7 @@ const PerformanceChart: FC = () => {
       <div
         ref={chartRef}
         className="chart-container"
-        style={{ display: results.length === 0 ? 'none' : 'block' }}
+        style={{ display: filteredResults.length === 0 ? 'none' : 'block' }}
       />
     </Card>
   )

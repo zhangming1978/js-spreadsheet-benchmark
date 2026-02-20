@@ -23,7 +23,7 @@ export class HandsontableAdapter extends ProductAdapter {
 
   getVersion(): string {
     // 获取 Handsontable 实际版本
-    return Handsontable.version || '14.6.1'
+    return Handsontable.version || '16.2.0'
   }
 
   // ==================== 生命周期 ====================
@@ -42,7 +42,7 @@ export class HandsontableAdapter extends ProductAdapter {
       stretchH: 'all'
     })
 
-    console.log('[HandsontableAdapter] Initialized with Handsontable', this.getVersion())
+    console.log('[HandsontableAdapter] 已使用 Handsontable 初始化', this.getVersion())
   }
 
   async destroy(): Promise<void> {
@@ -54,16 +54,16 @@ export class HandsontableAdapter extends ProductAdapter {
     }
 
     this.hotInstance = null
-    console.log('[HandsontableAdapter] Destroyed')
+    console.log('[HandsontableAdapter] 已销毁')
   }
 
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
-    if (this.hotInstance) {
-      // 使用 loadData 批量加载数据
+    if (this.hotInstance && data.length > 0) {
+      // 使用 loadData 批量加载数据（包括表头）
       this.hotInstance.loadData(data)
     }
-    console.log(`[HandsontableAdapter] Loaded ${data.length} rows`)
+    console.log(`[HandsontableAdapter] 已加载 ${data.length} 行数据（含表头）`)
   }
 
   getData(): any[][] {
@@ -77,7 +77,7 @@ export class HandsontableAdapter extends ProductAdapter {
     if (this.hotInstance) {
       this.hotInstance.loadData([])
     }
-    console.log('[HandsontableAdapter] Data cleared')
+    console.log('[HandsontableAdapter] 数据已清空')
   }
 
   // ==================== 编辑操作 ====================

@@ -45,6 +45,7 @@ const ProductDisplayArea: FC<ProductDisplayAreaProps> = ({ onContinue, onRetest,
       <Card>
         <Tabs
           activeKey={isRunning && currentProduct ? currentProduct : undefined}
+          defaultActiveKey={ProductType.SPREADJS}
           items={tabItems}
           size="large"
         />

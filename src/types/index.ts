@@ -70,6 +70,7 @@ export interface TestConfig {
 export interface TestResult {
   productName: ProductType;
   scenario: TestScenario;
+  dataSize: number; // 数据集大小
   metrics: PerformanceMetrics; // 平均值
   runs: RunResult[]; // 每次运行的详细结果
   initializationTime: number; // 初始化时间（不计入测试时间）

@@ -22,8 +22,9 @@ export class TestEngine {
   private results: TestResult[] = []
   private isRunning: boolean = false
   private shouldStop: boolean = false
-  private userDecision: 'continue' | 'retest' | 'stop' | null = null
   private userDecisionResolver: ((decision: 'continue' | 'retest' | 'stop') => void) | null = null
+  private countdownTimer: number | null = null
+  private readonly AUTO_CONTINUE_SECONDS = 10
 
   constructor(config: TestConfig) {
     this.config = config
@@ -33,7 +34,12 @@ export class TestEngine {
    * 设置用户决定（由外部调用）
    */
   setUserDecision(decision: 'continue' | 'retest' | 'stop'): void {
-    this.userDecision = decision
+    // 清除倒计时
+    if (this.countdownTimer !== null) {
+      clearInterval(this.countdownTimer)
+      this.countdownTimer = null
+    }
+
     if (this.userDecisionResolver) {
       this.userDecisionResolver(decision)
       this.userDecisionResolver = null
@@ -44,6 +50,35 @@ export class TestEngine {
    * 等待用户决定
    */
   private async waitForUserDecision(): Promise<'continue' | 'retest' | 'stop'> {
+    const store = useTestStore.getState()
+
+    // 检查是否启用自动继续
+    if (store.autoContinueEnabled) {
+      // 启动倒计时
+      let countdown = this.AUTO_CONTINUE_SECONDS
+      store.setAutoContinueCountdown(countdown)
+
+      this.countdownTimer = window.setInterval(() => {
+        countdown--
+        store.setAutoContinueCountdown(countdown)
+
+        if (countdown <= 0) {
+          // 倒计时结束，自动继续
+          if (this.countdownTimer !== null) {
+            clearInterval(this.countdownTimer)
+            this.countdownTimer = null
+          }
+          store.setAutoContinueCountdown(0)
+
+          // 自动触发继续
+          if (this.userDecisionResolver) {
+            this.userDecisionResolver('continue')
+            this.userDecisionResolver = null
+          }
+        }
+      }, 1000)
+    }
+
     return new Promise((resolve) => {
       this.userDecisionResolver = resolve
     })
@@ -187,17 +222,18 @@ export class TestEngine {
 
       store.setWaitingForConfirmation(false)
       store.setCurrentTestResult(null)
+      store.setAutoContinueCountdown(0)
 
-      // 立即切换到下一个产品，避免 Tab 切换延迟
-      if (decision === 'continue') {
-        store.setCurrentProduct(nextProduct)
-      }
-
-      // 测试完成后立即清理资源，释放内存
+      // 测试完成后立即清理资源，释放内存（在切换产品之前）
       if (decision === 'continue' || decision === 'stop') {
         console.log(`[TestEngine] 步骤 4: 测试完成后清理资源`)
         await runner.cleanup()
         console.log(`[TestEngine] 步骤 4: 清理完成`)
+      }
+
+      // 清理完成后再切换到下一个产品
+      if (decision === 'continue') {
+        store.setCurrentProduct(nextProduct)
       }
 
       // 只在重新测试时需要返回 retest 信号
@@ -250,6 +286,7 @@ export class TestEngine {
 
       store.setWaitingForConfirmation(false)
       store.setCurrentTestResult(null)
+      store.setAutoContinueCountdown(0)
 
       if (decision === 'retest') {
         return 'retest'
@@ -272,8 +309,18 @@ export class TestEngine {
       (window as any).gc()
     }
 
-    // 等待指定时间
-    await new Promise(resolve => setTimeout(resolve, seconds * 1000))
+    // 显示冷却倒计时
+    for (let remaining = seconds; remaining > 0; remaining--) {
+      message.loading({
+        content: `冷却中... 还剩 ${remaining} 秒`,
+        key: 'cooldown-progress',
+        duration: 0
+      })
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+
+    // 清除冷却消息
+    message.destroy('cooldown-progress')
   }
 
   /**

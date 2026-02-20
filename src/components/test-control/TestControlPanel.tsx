@@ -1,4 +1,4 @@
-import { FC, MutableRefObject, useState, useMemo } from 'react'
+import { FC, MutableRefObject, useState, useMemo, useEffect } from 'react'
 import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal, Alert } from 'antd'
 import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
@@ -30,6 +30,8 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
 
   // 测试前警告对话框状态
   const [showWarningModal, setShowWarningModal] = useState(false)
+  const [modalCountdown, setModalCountdown] = useState(5)
+  const [isStarting, setIsStarting] = useState(false)
 
   // 测试场景选项
   const scenarioOptions = [
@@ -71,13 +73,59 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   ]
 
   // 数据规模选项
-  const dataSizeOptions = [
+  const allDataSizeOptions = [
     { value: 5000, label: '5千行 ' },
     { value: 10000, label: '1万行' },
     { value: 50000, label: '5万行' },
     { value: 100000, label: '10万行' },
-    { value: 500000, label: '50万行' }
+    { value: 500000, label: '50万行' },
+    { value: 1000000, label: '100万行' }
   ]
+
+  // 每个测试场景推荐的数据规模
+  const scenarioDataSizeMap: Record<TestScenario, { sizes: number[], default: number, reason: string }> = {
+    [TestScenario.DATA_LOADING]: {
+      sizes: [10000, 100000, 500000, 1000000],
+      default: 10000,
+      reason: '数据加载测试适合大规模数据集以充分测试加载性能'
+    },
+    [TestScenario.SCROLLING]: {
+      sizes: [10000, 50000, 100000, 500000],
+      default: 50000,
+      reason: '滚动性能测试需要大规模数据集以充分测试滚动流畅度'
+    },
+    [TestScenario.EDITING]: {
+      sizes: [5000, 10000, 50000],
+      default: 10000,
+      reason: '编辑性能测试适合小到中规模数据集，编辑操作较为密集'
+    },
+    [TestScenario.FORMULA]: {
+      sizes: [5000, 10000, 50000],
+      default: 10000,
+      reason: '公式计算测试适合小到中规模数据集，计算密集型操作'
+    },
+    [TestScenario.RENDERING]: {
+      sizes: [10000, 50000, 100000, 500000],
+      default: 50000,
+      reason: '渲染性能测试适合中到大规模数据集以测试渲染能力'
+    },
+    [TestScenario.MEMORY]: {
+      sizes: [50000, 100000, 500000],
+      default: 100000,
+      reason: '内存占用测试需要大规模数据集以充分测试内存使用情况'
+    },
+    [TestScenario.EXCEL_IMPORT]: {
+      sizes: [5000, 10000, 50000, 100000],
+      default: 10000,
+      reason: 'Excel导入测试适合中等规模数据集，模拟典型Excel文件大小'
+    }
+  }
+
+  // 根据当前场景获取可用的数据规模选项
+  const dataSizeOptions = useMemo(() => {
+    const scenarioConfig = scenarioDataSizeMap[selectedScenario]
+    return allDataSizeOptions.filter(option => scenarioConfig.sizes.includes(option.value))
+  }, [selectedScenario])
 
   // 冷却时间选项
   const cooldownTimeOptions = [
@@ -97,6 +145,13 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   // 处理场景选择变化
   const handleScenarioChange = (value: TestScenario) => {
     setSelectedScenario(value)
+
+    // 自动调整数据规模到推荐值
+    const scenarioConfig = scenarioDataSizeMap[value]
+    if (!scenarioConfig.sizes.includes(dataSize)) {
+      setDataSize(scenarioConfig.default)
+      message.info(`已自动调整数据规模为 ${scenarioConfig.default.toLocaleString()} 行（${scenarioConfig.reason}）`, 3)
+    }
   }
 
   // 处理数据规模变化
@@ -130,6 +185,12 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
 
   // 确认开始测试
   const confirmStartTest = async () => {
+    // 防止重复启动
+    if (isStarting) {
+      return
+    }
+
+    setIsStarting(true)
     setShowWarningModal(false)
 
     try {
@@ -150,6 +211,7 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       message.error('测试失败：' + (error instanceof Error ? error.message : String(error)))
     } finally {
       testEngineRef.current = null
+      setIsStarting(false)
     }
   }
 
@@ -173,6 +235,32 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     const scenario = scenarioOptions.find(opt => opt.value === selectedScenario)
     return scenario?.description || ''
   }, [selectedScenario])
+
+  // 处理警告对话框倒计时
+  useEffect(() => {
+    if (showWarningModal) {
+      // 重置倒计时
+      setModalCountdown(5)
+
+      // 启动倒计时
+      const timer = window.setInterval(() => {
+        setModalCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            // 倒计时结束，自动开始测试
+            confirmStartTest()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      // 清理定时器
+      return () => {
+        clearInterval(timer)
+      }
+    }
+  }, [showWarningModal])
 
   return (
     <Card className="test-control-panel" title="测试控制面板" size="small">
@@ -206,7 +294,12 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
         </Col>
         <Col xs={24} sm={12} md={4} lg={3} xl={3}>
           <div className="control-item">
-            <label className="control-label">数据规模</label>
+            <label className="control-label">
+              数据规模
+              <Tooltip title={scenarioDataSizeMap[selectedScenario].reason}>
+                <QuestionCircleOutlined style={{ marginLeft: 4, color: '#999', fontSize: 12 }} />
+              </Tooltip>
+            </label>
             <Select
               size="middle"
               style={{ width: '100%' }}
@@ -217,6 +310,7 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
               {dataSizeOptions.map(option => (
                 <Option key={option.value} value={option.value}>
                   {option.label}
+                  {option.value === scenarioDataSizeMap[selectedScenario].default && ' (推荐)'}
                 </Option>
               ))}
             </Select>
@@ -316,8 +410,11 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
         }
         open={showWarningModal}
         onOk={confirmStartTest}
-        onCancel={() => setShowWarningModal(false)}
-        okText="我已了解，开始测试"
+        onCancel={() => {
+          setShowWarningModal(false)
+          setIsStarting(false)
+        }}
+        okText={modalCountdown > 0 ? `我已了解，开始测试 (${modalCountdown})` : '我已了解，开始测试'}
         cancelText="取消"
         width={500}
         centered

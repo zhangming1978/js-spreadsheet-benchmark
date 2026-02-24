@@ -11,57 +11,35 @@
   max-width: 100%;
   margin: 0 auto;
   width: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.home-content > .ant-row {
-  height: 100%;
-}
-
-.left-section {
+/* 主布局容器 - 垂直排列 */
+.main-layout {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
+  width: 100%;
 }
 
-/* 确保右侧列有正确的高度约束 */
-.right-column {
-  height: 100%;
-  display: flex !important;
-  flex-direction: column;
-}
-
+/* 控制面板区域 */
 .control-section {
   width: 100%;
   flex-shrink: 0;
 }
 
+/* 产品显示区域 */
 .display-section {
   width: 100%;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 100%;
-}
-
-.results-section {
-  flex: 1;
-  min-height: 0; /* 允许 flex 子元素缩小到内容以下 */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.system-info-section {
   flex-shrink: 0;
-  max-height: 300px;
-  overflow-y: auto;
+}
+
+/* 测试结果区域 */
+.results-section {
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: 8px;
 }
 
 /* 响应式设计 */
@@ -80,20 +58,10 @@
 
   .home-content {
     padding: 12px;
-    overflow: visible;
   }
 
-  .home-content > .ant-row {
-    height: auto;
-  }
-
-  .left-section {
+  .main-layout {
     gap: 12px;
-    height: auto;
-  }
-
-  .display-section {
-    overflow: visible;
   }
 }
 
@@ -102,7 +70,11 @@
     padding: 10px;
   }
 
-  .left-section {
+  .main-layout {
     gap: 10px;
+  }
+
+  .results-section {
+    margin-top: 4px;
   }
 }

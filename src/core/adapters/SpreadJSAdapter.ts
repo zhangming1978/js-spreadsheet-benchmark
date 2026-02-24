@@ -64,6 +64,8 @@ export class SpreadJSAdapter extends ProductAdapter {
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
     if (this.sheet && this.workbook && data.length > 0) {
+      console.log(`[SpreadJSAdapter] 开始加载数据: ${data.length} 行 (含表头)`)
+
       // 使用表单绑定方式加载数据，性能更好且更省内存
       // 将二维数组转换为对象数组
       const headers = data[0] // 第一行是表头
@@ -90,8 +92,11 @@ export class SpreadJSAdapter extends ProductAdapter {
         this.sheet.resumeCalcService(false) // false: 只计算变化的公式
         this.workbook.resumePaint()
       }
+
+      // 验证实际加载的行数
+      const actualRowCount = this.sheet.getRowCount()
+      console.log(`[SpreadJSAdapter] 数据加载完成: 请求 ${data.length - 1} 行, 实际加载 ${actualRowCount} 行`)
     }
-    console.log(`[SpreadJSAdapter] 使用数据绑定和性能优化加载了 ${data.length - 1} 行数据`)
   }
 
   getData(): any[][] {
@@ -169,9 +174,16 @@ export class SpreadJSAdapter extends ProductAdapter {
 
   // ==================== 滚动操作 ====================
   scrollTo(row: number, col: number): void {
-    if (this.sheet) {
+    if (this.sheet && this.workbook) {
+      console.log(`[SpreadJSAdapter] 滚动到行 ${row}, 列 ${col}`)
+      // 确保绘制已完成
+      this.workbook.resumePaint()
+      // 执行滚动
       this.sheet.showRow(row, GC.Spread.Sheets.VerticalPosition.top)
       this.sheet.showColumn(col, GC.Spread.Sheets.HorizontalPosition.left)
+      console.log(`[SpreadJSAdapter] 滚动完成，当前视口顶部行: ${this.sheet.getViewportTopRow(0)}`)
+    } else {
+      console.warn('[SpreadJSAdapter] 无法滚动：sheet 或 workbook 实例不存在')
     }
   }
 

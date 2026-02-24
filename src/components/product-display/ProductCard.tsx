@@ -22,8 +22,6 @@ const ProductCard: FC<ProductCardProps> = ({ productType, onContinue, onRetest, 
     currentFPS,
     currentMemory,
     isLastTest,
-    currentRun,
-    totalRuns,
     testStage,
     results,
     autoContinueCountdown
@@ -37,6 +35,12 @@ const ProductCard: FC<ProductCardProps> = ({ productType, onContinue, onRetest, 
         return '#52c41a'
       case ProductType.HANDSONTABLE:
         return '#fa8c16'
+      case ProductType.X_SPREADSHEET:
+        return '#722ed1'
+      case ProductType.LUCKYSHEET:
+        return '#eb2f96'
+      case ProductType.JSPREADSHEET:
+        return '#13c2c2'
       default:
         return '#666'
     }
@@ -50,6 +54,12 @@ const ProductCard: FC<ProductCardProps> = ({ productType, onContinue, onRetest, 
         return 'v0.15.5'
       case ProductType.HANDSONTABLE:
         return 'v16.2.0'
+      case ProductType.X_SPREADSHEET:
+        return 'v1.1.9'
+      case ProductType.LUCKYSHEET:
+        return 'v2.1.13'
+      case ProductType.JSPREADSHEET:
+        return 'v4.13.1'
       default:
         return ''
     }
@@ -73,37 +83,58 @@ const ProductCard: FC<ProductCardProps> = ({ productType, onContinue, onRetest, 
       'data-loading': {
         [ProductType.SPREADJS]: 'setDataSource()',
         [ProductType.UNIVER]: 'getRange().setValues()',
-        [ProductType.HANDSONTABLE]: 'loadData()'
+        [ProductType.HANDSONTABLE]: 'loadData()',
+        [ProductType.X_SPREADSHEET]: 'loadData()',
+        [ProductType.LUCKYSHEET]: 'create() with data',
+        [ProductType.JSPREADSHEET]: 'setData()'
       },
       'scrolling': {
         [ProductType.SPREADJS]: 'setDataSource(), showRow(), showColumn()',
         [ProductType.UNIVER]: 'getRange().setValues(), getRange().activate()',
-        [ProductType.HANDSONTABLE]: 'loadData(), scrollViewportTo()'
+        [ProductType.HANDSONTABLE]: 'loadData(), scrollViewportTo()',
+        [ProductType.X_SPREADSHEET]: 'loadData(), scroll.set()',
+        [ProductType.LUCKYSHEET]: 'create(), scrollTo()',
+        [ProductType.JSPREADSHEET]: 'setData(), updateScroll()'
       },
       'editing': {
         [ProductType.SPREADJS]: 'setDataSource(), setArray()',
         [ProductType.UNIVER]: 'getRange().setValues() ×2',
-        [ProductType.HANDSONTABLE]: 'loadData(), populateFromArray()'
+        [ProductType.HANDSONTABLE]: 'loadData(), populateFromArray()',
+        [ProductType.X_SPREADSHEET]: 'loadData(), cellText()',
+        [ProductType.LUCKYSHEET]: 'create(), setCellValue()',
+        [ProductType.JSPREADSHEET]: 'setData(), setValueFromCoords()'
       },
       'formula': {
         [ProductType.SPREADJS]: 'setDataSource(), setFormula(), recalcAll()',
         [ProductType.UNIVER]: 'getRange().setValues(), getRange().setFormula()',
-        [ProductType.HANDSONTABLE]: 'loadData(), setDataAtCell(), render()'
+        [ProductType.HANDSONTABLE]: 'loadData(), setDataAtCell(), render()',
+        [ProductType.X_SPREADSHEET]: 'loadData(), cellText() with formula',
+        [ProductType.LUCKYSHEET]: 'create(), setCellValue() with formula',
+        [ProductType.JSPREADSHEET]: 'setData(), setValueFromCoords() with formula'
       },
       'rendering': {
         [ProductType.SPREADJS]: 'setDataSource()',
         [ProductType.UNIVER]: 'getRange().setValues()',
-        [ProductType.HANDSONTABLE]: 'loadData()'
+        [ProductType.HANDSONTABLE]: 'loadData()',
+        [ProductType.X_SPREADSHEET]: 'loadData()',
+        [ProductType.LUCKYSHEET]: 'create() with data',
+        [ProductType.JSPREADSHEET]: 'setData()'
       },
       'memory': {
         [ProductType.SPREADJS]: 'setDataSource()',
         [ProductType.UNIVER]: 'getRange().setValues()',
-        [ProductType.HANDSONTABLE]: 'loadData()'
+        [ProductType.HANDSONTABLE]: 'loadData()',
+        [ProductType.X_SPREADSHEET]: 'loadData()',
+        [ProductType.LUCKYSHEET]: 'create() with data',
+        [ProductType.JSPREADSHEET]: 'setData()'
       },
       'excel-import': {
         [ProductType.SPREADJS]: 'setDataSource()',
         [ProductType.UNIVER]: 'getRange().setValues()',
-        [ProductType.HANDSONTABLE]: 'loadData()'
+        [ProductType.HANDSONTABLE]: 'loadData()',
+        [ProductType.X_SPREADSHEET]: 'loadData()',
+        [ProductType.LUCKYSHEET]: 'create() with data',
+        [ProductType.JSPREADSHEET]: 'setData()'
       }
     }
     return methodsMap[scenario]?.[product] || ''

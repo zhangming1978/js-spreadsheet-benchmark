@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { Modal, Space, Badge, Progress, Tag, Statistic, Row, Col, Card } from 'antd'
+import { Modal, Space, Badge, Progress, Tag, Row, Col, Card } from 'antd'
 import { useTestStore } from '@/stores/useTestStore'
 import { ProductType } from '@/types'
 import './TestModal.css'
@@ -8,9 +8,8 @@ const TestModal: FC = () => {
   const {
     isRunning,
     currentProduct,
-    currentTestIndex,
-    totalTests,
-    selectedProducts
+    selectedProducts,
+    progress
   } = useTestStore()
 
   const getProductColor = (type: ProductType) => {
@@ -40,8 +39,8 @@ const TestModal: FC = () => {
   }
 
   // 计算总体进度
-  const overallProgress = totalTests > 0
-    ? Math.round((currentTestIndex / totalTests) * 100)
+  const overallProgress = progress.totalTests > 0
+    ? Math.round((progress.completedTests / progress.totalTests) * 100)
     : 0
 
   return (
@@ -64,7 +63,7 @@ const TestModal: FC = () => {
             status="active"
           />
           <span style={{ fontSize: 14, color: '#666' }}>
-            {currentTestIndex} / {totalTests} 测试项
+            {progress.completedTests} / {progress.totalTests} 测试项
           </span>
         </Space>
       }

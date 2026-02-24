@@ -10,6 +10,7 @@ export class DataGenerator {
    * @returns 二维数组数据
    */
   static generateTableData(rows: number, cols: number = 10): any[][] {
+    console.log(`[DataGenerator] 生成表格数据: ${rows} 行 x ${cols} 列`)
     const data: any[][] = []
 
     // 生成表头
@@ -37,6 +38,7 @@ export class DataGenerator {
       data.push(row)
     }
 
+    console.log(`[DataGenerator] 实际生成数据: ${data.length} 行 (包含表头)`)
     return data
   }
 
@@ -47,6 +49,7 @@ export class DataGenerator {
    * @returns 包含公式的二维数组数据
    */
   static generateFormulaData(rows: number, cols: number = 10): any[][] {
+    console.log(`[DataGenerator] 生成公式数据: ${rows} 行 x ${cols} 列`)
     const data: any[][] = []
 
     // 生成表头
@@ -77,6 +80,7 @@ export class DataGenerator {
       data.push(row)
     }
 
+    console.log(`[DataGenerator] 实际生成公式数据: ${data.length} 行 (包含表头)`)
     return data
   }
 

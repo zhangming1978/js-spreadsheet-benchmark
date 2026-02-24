@@ -3,6 +3,9 @@ import type { ProductAdapter } from './ProductAdapter'
 import { SpreadJSAdapter } from './SpreadJSAdapter'
 import { UniverAdapter } from './UniverAdapter'
 import { HandsontableAdapter } from './HandsontableAdapter'
+import { XSpreadsheetAdapter } from './XSpreadsheetAdapter'
+import { LuckysheetAdapter } from './LuckysheetAdapter'
+import { JSpreadsheetAdapter } from './JSpreadsheetAdapter'
 
 /**
  * 适配器工厂
@@ -26,6 +29,15 @@ export class AdapterFactory {
       case ProductType.HANDSONTABLE:
         return new HandsontableAdapter()
 
+      case ProductType.X_SPREADSHEET:
+        return new XSpreadsheetAdapter()
+
+      case ProductType.LUCKYSHEET:
+        return new LuckysheetAdapter()
+
+      case ProductType.JSPREADSHEET:
+        return new JSpreadsheetAdapter()
+
       default:
         throw new Error(`Unknown product type: ${productType}`)
     }
@@ -36,6 +48,13 @@ export class AdapterFactory {
    * @returns 产品类型数组
    */
   static getSupportedProducts(): ProductType[] {
-    return [ProductType.SPREADJS, ProductType.UNIVER, ProductType.HANDSONTABLE]
+    return [
+      ProductType.SPREADJS,
+      ProductType.UNIVER,
+      ProductType.HANDSONTABLE,
+      ProductType.X_SPREADSHEET,
+      ProductType.LUCKYSHEET,
+      ProductType.JSPREADSHEET
+    ]
   }
 }

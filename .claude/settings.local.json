@@ -21,7 +21,23 @@
       "mcp__sjs-mcp__get_code_guidelines",
       "Bash(npm install:*)",
       "WebFetch(domain:univer.ai)",
-      "WebFetch(domain:handsontable.com)"
+      "WebFetch(domain:handsontable.com)",
+      "mcp__sjs-mcp__fetch",
+      "WebFetch(domain:reference.univer.ai)",
+      "Bash(dir /s /b node_modules@univerjs*locale*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(npm run type-check)",
+      "Bash(npx playwright install:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(wc:*)",
+      "Bash(npm run smoke-test:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npm search:*)"
     ]
   }
 }

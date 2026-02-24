@@ -80,167 +80,188 @@ const PerformanceChart: FC = () => {
     // 确保图表容器可见后调整大小
     chartInstanceRef.current.resize()
 
-    const option = generateChartOption(filteredResults, chartType)
+    const option = generateChartOption(filteredResults)
     chartInstanceRef.current.setOption(option, true)
   }, [filteredResults, chartType])
 
   // 生成图表配置
-  const generateChartOption = (data: TestResult[], type: ChartType): echarts.EChartsOption => {
-    if (type === 'bar' || type === 'line') {
-      return generateBarLineOption(data, type)
+  const generateChartOption = (data: TestResult[]): echarts.EChartsOption => {
+    if (chartType === 'bar' || chartType === 'line') {
+      return generateBarLineOption(data)
     } else {
       return generateRadarOption(data)
     }
   }
 
   // 生成柱状图/折线图配置
-  const generateBarLineOption = (data: TestResult[], type: 'bar' | 'line'): echarts.EChartsOption => {
-    const productNames = [...new Set(data.map(r => r.productName))]
+  const generateBarLineOption = (data: TestResult[]): echarts.EChartsOption => {
+    // 按产品聚合数据，计算平均值
+    const productMap = new Map<string, { executionTime: number[], fps: number[], memory: number[] }>()
+
+    data.forEach(r => {
+      if (!productMap.has(r.productName)) {
+        productMap.set(r.productName, { executionTime: [], fps: [], memory: [] })
+      }
+      const product = productMap.get(r.productName)!
+      product.executionTime.push(r.metrics.executionTime)
+      product.fps.push(r.metrics.fps || 0)
+      product.memory.push(r.metrics.memoryUsage)
+    })
+
+    // 计算每个产品的平均值
+    const aggregatedData = Array.from(productMap.entries()).map(([name, metrics]) => ({
+      name,
+      executionTime: Math.round(metrics.executionTime.reduce((a, b) => a + b, 0) / metrics.executionTime.length),
+      fps: Math.round(metrics.fps.reduce((a, b) => a + b, 0) / metrics.fps.length),
+      memory: Math.round(metrics.memory.reduce((a, b) => a + b, 0) / metrics.memory.length)
+    }))
+
+    // 为每个指标创建排序后的数据
+    const executionTimeData = aggregatedData
+      .map(r => ({ name: r.name, value: r.executionTime }))
+      .sort((a, b) => a.value - b.value)
+
+    const fpsData = aggregatedData
+      .map(r => ({ name: r.name, value: r.fps }))
+      .sort((a, b) => a.value - b.value)
+
+    const memoryData = aggregatedData
+      .map(r => ({ name: r.name, value: r.memory }))
+      .sort((a, b) => a.value - b.value)
 
     return {
-      title: {
-        text: '性能对比',
-        left: 'center',
-        textStyle: {
-          fontSize: 14,
-          fontWeight: 600
+      title: [
+        {
+          text: '执行时间 (ms)',
+          left: 'center',
+          top: '2%',
+          textStyle: { fontSize: 13, fontWeight: 600 }
+        },
+        {
+          text: 'FPS',
+          left: 'center',
+          top: '35%',
+          textStyle: { fontSize: 13, fontWeight: 600 }
+        },
+        {
+          text: '内存占用 (MB)',
+          left: 'center',
+          top: '68%',
+          textStyle: { fontSize: 13, fontWeight: 600 }
         }
-      },
+      ],
       tooltip: {
         trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        },
+        axisPointer: { type: 'shadow' },
         formatter: (params: any) => {
-          let result = `<div style="font-weight: 600; margin-bottom: 8px;">${params[0].axisValue}</div>`
-          params.forEach((param: any) => {
-            const unit = param.seriesName === '执行时间' ? 'ms' : param.seriesName === 'FPS' ? 'fps' : 'MB'
-            result += `
-              <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0;">
-                <span>${param.marker} ${param.seriesName}:</span>
-                <span style="font-weight: 600; margin-left: 16px;">${param.value} ${unit}</span>
-              </div>
-            `
-          })
-          return result
+          const param = Array.isArray(params) ? params[0] : params
+          const unit = param.seriesName === '执行时间' ? 'ms' : param.seriesName === 'FPS' ? 'fps' : 'MB'
+          return `<div style="font-weight: 600;">${param.name}</div>
+                  <div>${param.marker} ${param.seriesName}: <strong>${param.value} ${unit}</strong></div>`
         }
       },
-      legend: {
-        data: ['执行时间', 'FPS', '内存占用'],
-        bottom: 10,
-        textStyle: {
-          fontSize: 12
+      grid: [
+        { left: '20%', right: '10%', top: '8%', height: '22%', containLabel: false },
+        { left: '20%', right: '10%', top: '40%', height: '22%', containLabel: false },
+        { left: '20%', right: '10%', top: '73%', height: '22%', containLabel: false }
+      ],
+      xAxis: [
+        {
+          type: 'value',
+          gridIndex: 0,
+          axisLabel: { fontSize: 11, formatter: '{value} ms' },
+          splitLine: { show: true, lineStyle: { type: 'dashed', opacity: 0.3 } }
+        },
+        {
+          type: 'value',
+          gridIndex: 1,
+          axisLabel: { fontSize: 11, formatter: '{value} fps' },
+          splitLine: { show: true, lineStyle: { type: 'dashed', opacity: 0.3 } }
+        },
+        {
+          type: 'value',
+          gridIndex: 2,
+          axisLabel: { fontSize: 11, formatter: '{value} MB' },
+          splitLine: { show: true, lineStyle: { type: 'dashed', opacity: 0.3 } }
         }
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '15%',
-        top: '15%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: productNames,
-        axisLabel: {
-          fontSize: 12
-        }
-      },
+      ],
       yAxis: [
         {
-          type: 'value',
-          name: '执行时间 (ms)',
-          position: 'left',
-          nameTextStyle: {
-            fontSize: 12
-          },
-          axisLabel: {
-            fontSize: 11,
-            formatter: '{value} ms'
-          }
+          type: 'category',
+          gridIndex: 0,
+          data: executionTimeData.map(d => d.name),
+          axisLabel: { fontSize: 11 },
+          axisTick: { show: false }
         },
         {
-          type: 'value',
-          name: 'FPS / 内存 (MB)',
-          position: 'right',
-          nameTextStyle: {
-            fontSize: 12
-          },
-          axisLabel: {
-            fontSize: 11
-          }
+          type: 'category',
+          gridIndex: 1,
+          data: fpsData.map(d => d.name),
+          axisLabel: { fontSize: 11 },
+          axisTick: { show: false }
+        },
+        {
+          type: 'category',
+          gridIndex: 2,
+          data: memoryData.map(d => d.name),
+          axisLabel: { fontSize: 11 },
+          axisTick: { show: false }
         }
       ],
       series: [
         {
           name: '执行时间',
-          type,
+          type: 'bar',
+          xAxisIndex: 0,
           yAxisIndex: 0,
-          data: productNames.map(name => {
-            const result = data.find(r => r.productName === name)
-            return result ? Math.round(result.metrics.executionTime) : 0
-          }),
+          data: executionTimeData.map(d => d.value),
           label: {
             show: true,
-            position: 'top',
+            position: 'right',
             formatter: '{c} ms',
             fontSize: 11,
             color: '#666'
           },
           itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
               { offset: 0, color: '#83bff6' },
               { offset: 0.5, color: '#188df0' },
               { offset: 1, color: '#188df0' }
             ])
           },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#2378f7' },
-                { offset: 0.7, color: '#2378f7' },
-                { offset: 1, color: '#83bff6' }
-              ])
-            }
-          }
+          barMaxWidth: 50
         },
         {
           name: 'FPS',
-          type,
+          type: 'bar',
+          xAxisIndex: 1,
           yAxisIndex: 1,
-          data: productNames.map(name => {
-            const result = data.find(r => r.productName === name)
-            return result ? Math.round(result.metrics.fps || 0) : 0
-          }),
+          data: fpsData.map(d => d.value),
           label: {
             show: true,
-            position: 'top',
+            position: 'right',
             formatter: '{c} fps',
             fontSize: 11,
             color: '#666'
           },
-          itemStyle: {
-            color: '#52c41a'
-          }
+          itemStyle: { color: '#52c41a' },
+          barMaxWidth: 50
         },
         {
           name: '内存占用',
-          type,
-          yAxisIndex: 1,
-          data: productNames.map(name => {
-            const result = data.find(r => r.productName === name)
-            return result ? Math.round(result.metrics.memoryUsage) : 0
-          }),
+          type: 'bar',
+          xAxisIndex: 2,
+          yAxisIndex: 2,
+          data: memoryData.map(d => d.value),
           label: {
             show: true,
-            position: 'top',
+            position: 'right',
             formatter: '{c} MB',
             fontSize: 11,
             color: '#666'
           },
-          itemStyle: {
-            color: '#fa8c16'
-          }
+          itemStyle: { color: '#fa8c16' },
+          barMaxWidth: 50
         }
       ]
     }

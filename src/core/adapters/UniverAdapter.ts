@@ -131,11 +131,17 @@ export class UniverAdapter extends ProductAdapter {
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
     if (this.worksheet && data.length > 0) {
+      console.log(`[UniverAdapter] 开始加载数据: ${data.length} 行 x ${data[0]?.length || 0} 列`)
+
       // 使用 setValues 批量设置数据（包括表头）
       const range = this.worksheet.getRange(0, 0, data.length, data[0]?.length || 0)
       await range.setValues(data)
+
+      // 验证实际加载的数据
+      const verifyRange = this.worksheet.getRange(0, 0, data.length, data[0]?.length || 0)
+      const loadedData = verifyRange.getValues()
+      console.log(`[UniverAdapter] 数据加载完成: 请求 ${data.length} 行, 实际加载 ${loadedData.length} 行`)
     }
-    console.log(`[UniverAdapter] 已加载 ${data.length} 行数据（含表头）`)
   }
 
   getData(): any[][] {
@@ -190,7 +196,9 @@ export class UniverAdapter extends ProductAdapter {
       const sourceRange = this.worksheet.getRange(startRow, startCol)
       const sourceValue = sourceRange.getValue()
       const targetRange = this.worksheet.getRange(startRow, startCol, endRow - startRow + 1, endCol - startCol + 1)
-      targetRange.setValue(sourceValue)
+      if (sourceValue !== null) {
+        targetRange.setValue(sourceValue)
+      }
     }
   }
 
@@ -223,9 +231,11 @@ export class UniverAdapter extends ProductAdapter {
       const selection = this.worksheet.getSelection()
       if (selection) {
         const currentCell = selection.getCurrentCell()
-        return {
-          row: currentCell.actualRow,
-          col: currentCell.actualColumn
+        if (currentCell) {
+          return {
+            row: currentCell.actualRow,
+            col: currentCell.actualColumn
+          }
         }
       }
     }

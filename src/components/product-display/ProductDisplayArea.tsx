@@ -12,13 +12,9 @@ interface ProductDisplayAreaProps {
 }
 
 const ProductDisplayArea: FC<ProductDisplayAreaProps> = ({ onContinue, onRetest, onStop }) => {
-  const { currentProduct, isRunning, results } = useTestStore()
+  const { isRunning, currentProduct } = useTestStore()
 
   // 只对已完成测试的产品强制渲染，避免不必要的性能开销
-  const hasSpreadJSResult = results.some(r => r.productName === ProductType.SPREADJS)
-  const hasUniverResult = results.some(r => r.productName === ProductType.UNIVER)
-  const hasHandsontableResult = results.some(r => r.productName === ProductType.HANDSONTABLE)
-
   const tabItems = [
     {
       key: ProductType.SPREADJS,
@@ -36,6 +32,12 @@ const ProductDisplayArea: FC<ProductDisplayAreaProps> = ({ onContinue, onRetest,
       key: ProductType.HANDSONTABLE,
       label: 'Handsontable',
       children: <ProductCard productType={ProductType.HANDSONTABLE} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />,
+      forceRender: true // 始终渲染以确保 iframe 可用
+    },
+    {
+      key: ProductType.LUCKYSHEET,
+      label: 'Luckysheet',
+      children: <ProductCard productType={ProductType.LUCKYSHEET} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />,
       forceRender: true // 始终渲染以确保 iframe 可用
     }
   ]

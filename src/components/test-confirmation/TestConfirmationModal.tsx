@@ -269,7 +269,7 @@ const TestConfirmationModal: FC<TestConfirmationModalProps> = ({ onContinue, onR
               <Col span={8}>
                 <Statistic
                   title="FPS"
-                  value={currentTestResult.metrics.fps.toFixed(1)}
+                  value={currentTestResult.metrics.fps?.toFixed(1) || 0}
                   valueStyle={{ fontSize: 20 }}
                 />
               </Col>

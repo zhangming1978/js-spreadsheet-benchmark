@@ -4,7 +4,10 @@
 export enum ProductType {
   SPREADJS = 'SpreadJS',
   UNIVER = 'Univer',
-  HANDSONTABLE = 'Handsontable'
+  HANDSONTABLE = 'Handsontable',
+  X_SPREADSHEET = 'x-spreadsheet',
+  LUCKYSHEET = 'Luckysheet',
+  JSPREADSHEET = 'jSpreadsheet'
 }
 
 /**

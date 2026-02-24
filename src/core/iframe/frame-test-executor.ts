@@ -1,6 +1,9 @@
 import { SpreadJSAdapter } from '../adapters/SpreadJSAdapter'
 import { UniverAdapter } from '../adapters/UniverAdapter'
 import { HandsontableAdapter } from '../adapters/HandsontableAdapter'
+import { XSpreadsheetAdapter } from '../adapters/XSpreadsheetAdapter'
+import { LuckysheetAdapter } from '../adapters/LuckysheetAdapter'
+import { JSpreadsheetAdapter } from '../adapters/JSpreadsheetAdapter'
 import { DataGenerator } from '../engine/DataGenerator'
 import type { ProductAdapter } from '../adapters/ProductAdapter'
 import { TestScenario, ProductType } from '@/types'
@@ -86,6 +89,12 @@ class FrameTestExecutor {
       this.adapter = new UniverAdapter()
     } else if (productType === ProductType.HANDSONTABLE) {
       this.adapter = new HandsontableAdapter()
+    } else if (productType === ProductType.X_SPREADSHEET) {
+      this.adapter = new XSpreadsheetAdapter()
+    } else if (productType === ProductType.LUCKYSHEET) {
+      this.adapter = new LuckysheetAdapter()
+    } else if (productType === ProductType.JSPREADSHEET) {
+      this.adapter = new JSpreadsheetAdapter()
     } else {
       throw new Error(`不支持的产品类型: ${productType}`)
     }
@@ -214,6 +223,17 @@ class FrameTestExecutor {
   private async testDataLoading(dataSize: number): Promise<void> {
     const data = DataGenerator.generateTableData(dataSize)
     await this.adapter!.loadData(data)
+
+    // 等待渲染完成
+    await this.sleep(100)
+
+    // 滚动到最后一行以验证数据已加载
+    const lastRow = data.length - 1
+    if (lastRow > 0) {
+      console.log(`[FrameTestExecutor] 滚动到最后一行 (${lastRow}) 以验证数据加载`)
+      this.adapter!.scrollTo(lastRow, 0)
+      await this.sleep(300)
+    }
   }
 
   private async testScrolling(dataSize: number): Promise<void> {

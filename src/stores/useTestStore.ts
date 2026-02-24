@@ -10,6 +10,16 @@ export interface ProductTestStatus {
   error?: string
 }
 
+// 冒烟测试结果
+export interface SmokeTestResult {
+  product: ProductType
+  success: boolean
+  error?: string
+  duration: number
+  details?: string
+  timestamp: number
+}
+
 // 测试进度信息
 export interface TestProgress {
   totalTests: number
@@ -58,6 +68,11 @@ interface TestState {
   autoContinueCountdown: number
   autoContinueEnabled: boolean
 
+  // 冒烟测试
+  smokeTestResults: Map<ProductType, SmokeTestResult>
+  autoSmokeTestEnabled: boolean
+  isRunningSmokeTest: boolean
+
   // Actions
   setStatus: (status: TestStatus) => void
   setCurrentScenario: (scenario: TestScenario | null) => void
@@ -82,6 +97,10 @@ interface TestState {
   setIsLastTest: (isLast: boolean) => void
   setAutoContinueCountdown: (countdown: number) => void
   setAutoContinueEnabled: (enabled: boolean) => void
+  setSmokeTestResult: (product: ProductType, result: SmokeTestResult) => void
+  clearSmokeTestResults: () => void
+  setAutoSmokeTestEnabled: (enabled: boolean) => void
+  setIsRunningSmokeTest: (isRunning: boolean) => void
   reset: () => void
 }
 
@@ -92,7 +111,12 @@ export const useTestStore = create<TestState>((set) => ({
   currentProduct: null,
   isRunning: false,
   config: null,
-  selectedProducts: [ProductType.SPREADJS, ProductType.UNIVER, ProductType.HANDSONTABLE],
+  selectedProducts: [
+    ProductType.SPREADJS,
+    ProductType.UNIVER,
+    ProductType.HANDSONTABLE,
+    ProductType.LUCKYSHEET
+  ],
   selectedScenario: TestScenario.DATA_LOADING,
   dataSize: 10000,
   cooldownTime: 5,
@@ -114,6 +138,9 @@ export const useTestStore = create<TestState>((set) => ({
   isLastTest: false,
   autoContinueCountdown: 0,
   autoContinueEnabled: true,
+  smokeTestResults: new Map(),
+  autoSmokeTestEnabled: true,
+  isRunningSmokeTest: false,
 
   // Actions
   setStatus: (status) => set({ status }),
@@ -150,12 +177,21 @@ export const useTestStore = create<TestState>((set) => ({
   setIsLastTest: (isLast) => set({ isLastTest: isLast }),
   setAutoContinueCountdown: (countdown) => set({ autoContinueCountdown: countdown }),
   setAutoContinueEnabled: (enabled) => set({ autoContinueEnabled: enabled }),
+  setSmokeTestResult: (product, result) => set((state) => {
+    const newResults = new Map(state.smokeTestResults)
+    newResults.set(product, result)
+    return { smokeTestResults: newResults }
+  }),
+  clearSmokeTestResults: () => set({ smokeTestResults: new Map() }),
+  setAutoSmokeTestEnabled: (enabled) => set({ autoSmokeTestEnabled: enabled }),
+  setIsRunningSmokeTest: (isRunning) => set({ isRunningSmokeTest: isRunning }),
   reset: () => set({
     status: TestStatus.IDLE,
     currentScenario: null,
     currentProduct: null,
     isRunning: false,
     config: null,
+    selectedProducts: [ProductType.SPREADJS],
     results: [],
     productStatuses: new Map(),
     progress: {
@@ -173,6 +209,9 @@ export const useTestStore = create<TestState>((set) => ({
     currentTestResult: null,
     isLastTest: false,
     autoContinueCountdown: 0,
-    autoContinueEnabled: true
+    autoContinueEnabled: true,
+    smokeTestResults: new Map(),
+    autoSmokeTestEnabled: true,
+    isRunningSmokeTest: false
   })
 }))

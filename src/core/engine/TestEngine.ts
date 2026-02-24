@@ -1,4 +1,5 @@
-import type { ProductType, TestScenario, TestResult } from '@/types'
+import { ProductType } from '@/types'
+import type { TestScenario, TestResult } from '@/types'
 import { IframeTestRunner } from './IframeTestRunner'
 import { useTestStore } from '@/stores/useTestStore'
 import { message } from 'antd'
@@ -189,7 +190,7 @@ export class TestEngine {
     console.log(`[TestEngine] ========== 开始测试 ${productType} (最后一个测试: ${isLastTest}) ==========`)
 
     // 显示开始测试的消息
-    const productName = productType === 'spreadjs' ? 'SpreadJS' : productType === 'handsontable' ? 'Handsontable' : productType
+    const productName = productType === ProductType.SPREADJS ? 'SpreadJS' : productType === ProductType.HANDSONTABLE ? 'Handsontable' : productType
     message.loading({ content: `正在准备 ${productName} 测试环境...`, key: 'test-progress', duration: 0 })
 
     try {

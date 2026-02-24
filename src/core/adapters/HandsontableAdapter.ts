@@ -60,10 +60,15 @@ export class HandsontableAdapter extends ProductAdapter {
   // ==================== 数据操作 ====================
   async loadData(data: any[][]): Promise<void> {
     if (this.hotInstance && data.length > 0) {
+      console.log(`[HandsontableAdapter] 开始加载数据: ${data.length} 行 (含表头)`)
+
       // 使用 loadData 批量加载数据（包括表头）
       this.hotInstance.loadData(data)
+
+      // 验证实际加载的行数
+      const actualRowCount = this.hotInstance.countRows()
+      console.log(`[HandsontableAdapter] 数据加载完成: 请求 ${data.length} 行, 实际加载 ${actualRowCount} 行`)
     }
-    console.log(`[HandsontableAdapter] 已加载 ${data.length} 行数据（含表头）`)
   }
 
   getData(): any[][] {
@@ -143,10 +148,9 @@ export class HandsontableAdapter extends ProductAdapter {
     if (this.hotInstance) {
       // Handsontable 没有直接获取滚动位置的 API
       // 使用 getFirstVisibleRow/Column 作为替代
-      const plugin = this.hotInstance.getPlugin('autoRowSize')
       return {
-        row: this.hotInstance.rowOffset() || 0,
-        col: this.hotInstance.colOffset() || 0
+        row: (this.hotInstance as any).rowOffset?.() || 0,
+        col: (this.hotInstance as any).colOffset?.() || 0
       }
     }
     return { row: 0, col: 0 }

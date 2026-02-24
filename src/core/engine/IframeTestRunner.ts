@@ -55,6 +55,11 @@ export class IframeTestRunner {
         store.setCurrentMemory(data.memory)
       })
 
+      // 设置测试阶段处理器
+      this.iframeManager.on('testStage', (data) => {
+        store.setTestStage(data.stage)
+      })
+
       // 步骤1: 初始化产品
       console.log(`[IframeTestRunner] 正在初始化产品: ${this.productType}`)
       store.setTestStage('初始化中...')

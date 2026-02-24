@@ -44,6 +44,12 @@
   font-weight: normal;
 }
 
+.product-methods {
+  font-size: 13px;
+  color: #666;
+  font-weight: normal;
+}
+
 .performance-stats {
   display: flex;
   align-items: center;

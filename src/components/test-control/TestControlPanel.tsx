@@ -139,7 +139,9 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   const productOptions = [
     { value: ProductType.SPREADJS, label: 'SpreadJS' },
     { value: ProductType.UNIVER, label: 'Univer' },
-    { value: ProductType.HANDSONTABLE, label: 'Handsontable' }
+    { value: ProductType.HANDSONTABLE, label: 'Handsontable' },
+    { value: ProductType.LUCKYSHEET, label: 'Luckysheet' }
+    // x-spreadsheet 和 jSpreadsheet 已隐藏
   ]
 
   // 处理场景选择变化
@@ -171,6 +173,9 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       return
     }
     setSelectedProducts(checkedValues)
+
+    // 自动冒烟测试功能已禁用
+    // 用户可以通过"冒烟测试"按钮手动触发
   }
 
   // 处理开始测试按钮点击
@@ -229,6 +234,8 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     clearResults()
     message.success('已重置到初始状态')
   }
+
+  // 处理冒烟测试（手动触发）
 
   // 获取当前选中场景的描述
   const currentScenarioDescription = useMemo(() => {
@@ -352,7 +359,7 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
         </Col>
         <Col xs={24} sm={24} md={24} lg={7} xl={7}>
           <div className="control-item control-item-buttons">
-            <Space size={4}>
+            <Space size={4} wrap>
               <Button
                 type="primary"
                 size="small"

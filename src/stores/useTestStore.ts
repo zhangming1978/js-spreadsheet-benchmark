@@ -115,7 +115,9 @@ export const useTestStore = create<TestState>((set) => ({
     ProductType.SPREADJS,
     ProductType.UNIVER,
     ProductType.HANDSONTABLE,
-    ProductType.LUCKYSHEET
+    ProductType.LUCKYSHEET,
+    ProductType.X_SPREADSHEET,
+    ProductType.JSPREADSHEET
   ],
   selectedScenario: TestScenario.DATA_LOADING,
   dataSize: 10000,

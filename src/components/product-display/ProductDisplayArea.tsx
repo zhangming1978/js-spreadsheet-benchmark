@@ -39,6 +39,18 @@ const ProductDisplayArea: FC<ProductDisplayAreaProps> = ({ onContinue, onRetest,
       label: 'Luckysheet',
       children: <ProductCard productType={ProductType.LUCKYSHEET} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />,
       forceRender: true // 始终渲染以确保 iframe 可用
+    },
+    {
+      key: ProductType.X_SPREADSHEET,
+      label: 'x-spreadsheet',
+      children: <ProductCard productType={ProductType.X_SPREADSHEET} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />,
+      forceRender: true // 始终渲染以确保 iframe 可用
+    },
+    {
+      key: ProductType.JSPREADSHEET,
+      label: 'jSpreadsheet',
+      children: <ProductCard productType={ProductType.JSPREADSHEET} onContinue={onContinue} onRetest={onRetest} onStop={onStop} />,
+      forceRender: true // 始终渲染以确保 iframe 可用
     }
   ]
 

@@ -140,8 +140,9 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     { value: ProductType.SPREADJS, label: 'SpreadJS' },
     { value: ProductType.UNIVER, label: 'Univer' },
     { value: ProductType.HANDSONTABLE, label: 'Handsontable' },
-    { value: ProductType.LUCKYSHEET, label: 'Luckysheet' }
-    // x-spreadsheet 和 jSpreadsheet 已隐藏
+    { value: ProductType.LUCKYSHEET, label: 'Luckysheet' },
+    { value: ProductType.X_SPREADSHEET, label: 'x-spreadsheet' },
+    { value: ProductType.JSPREADSHEET, label: 'jSpreadsheet' }
   ]
 
   // 处理场景选择变化

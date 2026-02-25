@@ -4,6 +4,12 @@
 
 一个基于 React + TypeScript + Vite 构建的开源性能基准测试工具，用于自动化测试和可视化对比主流 JavaScript 电子表格库的性能表现。
 
+## 截图
+
+![测试控制面板](docs/screenshot-start.png)
+
+![测试结果对比](docs/screenshot-results.png)
+
 ## 测试产品
 
 | 产品 | 版本 | 类型 |

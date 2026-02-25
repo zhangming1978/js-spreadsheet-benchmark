@@ -81,4 +81,4 @@ npm run test:report      # 查看测试报告
 
 ## 许可证
 
-MIT
+GPL v3 — 详见 [LICENSE](LICENSE)

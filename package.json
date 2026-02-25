@@ -3,6 +3,7 @@
   "private": false,
   "version": "1.0.0",
   "description": "An open-source performance benchmark tool for comparing mainstream JavaScript spreadsheet libraries.",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "dev": "vite",

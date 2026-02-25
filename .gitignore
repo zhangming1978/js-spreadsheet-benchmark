@@ -27,3 +27,10 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Playwright
+playwright-report/
+test-results/
+
+# Misc
+nul

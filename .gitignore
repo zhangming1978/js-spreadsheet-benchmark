@@ -34,3 +34,6 @@ test-results/
 
 # Misc
 nul
+
+# Claude Code
+.claude/

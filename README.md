@@ -1,147 +1,83 @@
-# SpreadJS 性能对比测试平台
+# JS Spreadsheet Benchmark
 
-基于 React + TypeScript + Vite 构建的 SpreadJS 性能对比测试平台，用于自动化测试和可视化对比 6 个主流表格库的性能表现。
+> 电子表格库性能基准测试 · 开源 · 中立 · 可复现
 
-## 支持的产品
+一个基于 React + TypeScript + Vite 构建的开源性能基准测试工具，用于自动化测试和可视化对比主流 JavaScript 电子表格库的性能表现。
 
-- ✅ **SpreadJS** - GrapeCity 企业级表格控件
-- ✅ **Univer** - 开源企业级表格方案
-- ✅ **Handsontable** - 流行的数据表格库
-- ✅ **x-spreadsheet** - 轻量级 Web 表格
-- ✅ **Luckysheet** - 在线表格编辑器
-- ✅ **jSpreadsheet** - JavaScript 表格组件
+## 测试产品
+
+| 产品 | 版本 | 类型 |
+|------|------|------|
+| [SpreadJS](https://developer.mescius.com/spreadjs) | v19.0.1 | 商业 |
+| [Univer](https://univer.ai) | v0.15.5 | 开源 |
+| [Handsontable](https://handsontable.com) | v16.2.0 | 商业/社区版 |
+| [x-spreadsheet](https://github.com/myliang/x-spreadsheet) | v1.1.9 | 开源 |
+| [Luckysheet](https://github.com/dream-num/Luckysheet) | v2.1.13 | 开源 |
+| [jSpreadsheet CE](https://bossanova.uk/jspreadsheet) | v5.0.4 | 开源 |
+
+## 测试场景
+
+1. 数据加载性能（1k / 10k / 50k / 100k 行）
+2. 滚动性能（FPS）
+3. 编辑操作性能（单元格编辑、批量粘贴、自动填充）
+4. 公式计算性能（SUM/AVERAGE、VLOOKUP/INDEX-MATCH）
+5. 渲染性能（条件格式、图表）
+6. 内存占用
+7. Excel 文件导入性能
 
 ## 技术栈
 
-- **框架**: React 18.3+
-- **语言**: TypeScript 5.0+
-- **构建工具**: Vite 5.0+
-- **UI 组件库**: Ant Design 5.0+
-- **图表库**: Apache ECharts 5.5+
-- **状态管理**: Zustand 4.0+
-- **工具库**: lodash-es, dayjs, xlsx
+- React 18 + TypeScript 5 + Vite 5
+- Ant Design 5 · Apache ECharts 5 · Zustand 4
+- Playwright（E2E 自动化测试）
+
+## 快速开始
+
+```bash
+npm install
+npm run dev
+```
+
 
 ## 项目结构
 
 ```
 src/
-├── main.tsx                 # 应用入口
-├── App.tsx                  # 根组件
-├── components/              # 展示层组件
-│   ├── layout/             # 布局组件
-│   ├── test-control/       # 测试控制组件
-│   ├── product-display/    # 产品展示组件
-│   └── results/            # 结果展示组件
-├── pages/                   # 页面组件
-├── stores/                  # 状态管理
-├── services/               # 应用层服务
-├── core/                   # 核心层
-│   ├── adapters/          # 产品适配器
-│   ├── executors/         # 测试执行器
-│   └── types/             # 核心类型定义
-├── types/                  # 类型定义
-└── utils/                  # 工具函数
+├── components/          # UI 组件
+│   ├── layout/         # 布局
+│   ├── test-control/   # 测试控制面板
+│   ├── product-display/# 产品展示区
+│   └── results/        # 结果图表
+├── core/
+│   ├── adapters/       # 各产品适配器（统一接口）
+│   └── executors/      # 测试执行器
+├── stores/             # 状态管理（Zustand）
+└── types/              # 类型定义
 ```
-
-## 开始使用
-
-### 安装依赖
-
-```bash
-npm install
-```
-
-### 启动开发服务器
-
-```bash
-npm run dev
-```
-
-### 构建生产版本
-
-```bash
-npm run build
-```
-
-### 预览生产构建
-
-```bash
-npm run preview
-```
-
-## 快速验证 - 冒烟测试
-
-快速验证所有产品的基本功能（无需 UI）：
-
-```bash
-# 运行冒烟测试（自动启动服务器）
-npm run smoke-test
-
-# 以有头模式运行（显示浏览器）
-npm run smoke-test:headed
-```
-
-冒烟测试会：
-- 自动测试所有 6 个产品
-- 验证初始化和基本数据加载
-- 生成测试报告
-- 耗时约 2-3 分钟
-
-详细说明请查看 [scripts/README.md](scripts/README.md)
-
-## 功能特性
-
-- ✅ 自动化性能测试
-- ✅ 多产品并行对比（6 个产品）
-- ✅ 实时性能监控
-- ✅ 可视化结果展示
-- ✅ 数据导出功能
-- ✅ 冒烟测试 CLI 工具
-- ✅ 完整的 E2E 自动化测试
-
-## 测试场景
-
-1. 数据加载性能
-2. 滚动性能
-3. 编辑性能
-4. 公式计算性能
-5. 渲染性能
-6. 内存占用
-7. Excel 导入性能
-
-## 开发说明
-
-项目已完成核心功能开发：
-- ✅ 项目基础架构
-- ✅ UI 界面布局
-- ✅ 组件结构设计
-- ✅ 状态管理框架
-- ✅ 6 个产品适配器实现
-- ✅ 测试引擎和执行器
-- ✅ 自动化测试套件
-- ✅ 冒烟测试 CLI 工具
 
 ## 测试命令
 
 ```bash
-# 运行所有测试
-npm test
-
-# 运行冒烟测试（快速验证）
-npm run smoke-test
-
-# UI 模式运行测试
-npm run test:ui
-
-# 有头模式运行测试
-npm run test:headed
-
-# 调试模式
-npm run test:debug
-
-# 查看测试报告
-npm run test:report
+npm run smoke-test       # 快速冒烟测试（验证所有产品可用）
+npm test                 # 完整 E2E 测试套件
+npm run test:ui          # Playwright UI 模式
+npm run test:report      # 查看测试报告
 ```
+
+## 设计原则
+
+- **中立**：所有产品使用相同测试数据和测试环境
+- **透明**：测试代码完全开源，方法论公开
+- **可复现**：任何人均可在本地运行并验证结果
+- **可扩展**：通过适配器模式轻松添加新产品
+
+## 贡献指南
+
+欢迎提交 Issue 和 Pull Request：
+
+- 新增产品适配器：参考 `src/core/adapters/` 中的现有实现
+- 新增测试场景：在 `src/core/executors/` 中扩展
+- 修复测试方法：请附上说明和参考资料
 
 ## 许可证
 

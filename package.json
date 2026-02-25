@@ -1,7 +1,8 @@
 {
-  "name": "spreadjs-performance-website",
-  "private": true,
-  "version": "0.0.1",
+  "name": "js-spreadsheet-benchmark",
+  "private": false,
+  "version": "1.0.0",
+  "description": "An open-source performance benchmark tool for comparing mainstream JavaScript spreadsheet libraries.",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -10,10 +10,10 @@ const AppHeader: FC = () => {
     <Header className="app-header">
       <div className="header-content">
         <Title level={3} className="header-title">
-          SpreadJS 性能对比测试平台
+          JS Spreadsheet Benchmark
         </Title>
         <div className="header-subtitle">
-          自动化性能测试与可视化对比分析
+          电子表格库性能基准测试 · 开源 · 中立 · 可复现
         </div>
       </div>
     </Header>

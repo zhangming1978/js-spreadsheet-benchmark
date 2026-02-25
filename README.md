@@ -4,6 +4,8 @@
 
 一个基于 React + TypeScript + Vite 构建的开源性能基准测试工具，用于自动化测试和可视化对比主流 JavaScript 电子表格库的性能表现。
 
+**在线演示：[js-spreadsheet-benchmark.vercel.app](https://js-spreadsheet-benchmark.vercel.app/)**
+
 ## 截图
 
 ![测试控制面板](docs/screenshot-start.png)

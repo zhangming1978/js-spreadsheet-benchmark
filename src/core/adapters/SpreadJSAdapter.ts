@@ -2,6 +2,7 @@ import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
 import * as GC from '@grapecity-software/spread-sheets'
+import type { FormulaDataSet } from '../engine/DataGenerator'
 
 /**
  * SpreadJS 适配器
@@ -69,36 +70,45 @@ export class SpreadJSAdapter extends ProductAdapter {
     if (this.sheet && this.workbook && data.length > 0) {
       console.log(`[SpreadJSAdapter] 开始加载数据: ${data.length} 行 (含表头)`)
 
-      // 使用表单绑定方式加载数据，性能更好且更省内存
-      // 将二维数组转换为对象数组
-      const headers = data[0] // 第一行是表头
-      const rows = data.slice(1) // 剩余行是数据
-
-      // 转换为对象数组格式
+      // 普通数据：将二维数组转为对象数组，使用 setDataSource 数据绑定
+      const headers = data[0]
+      const rows = data.slice(1)
       const dataSource = rows.map(row => {
         const obj: any = {}
-        headers.forEach((header, index) => {
+        headers.forEach((header: any, index: number) => {
           obj[header] = row[index]
         })
         return obj
       })
 
-      // 性能优化：挂起绘制和计算，批量加载数据后再恢复
       this.workbook.suspendPaint()
-      this.sheet.suspendCalcService(false) // false: 不忽略脏数据
-
       try {
-        // 使用 setDataSource 进行数据绑定
         this.sheet.setDataSource(dataSource)
       } finally {
-        // 恢复计算和绘制
-        this.sheet.resumeCalcService(false) // false: 只计算变化的公式
         this.workbook.resumePaint()
       }
 
-      // 验证实际加载的行数
-      const actualRowCount = this.sheet.getRowCount()
-      console.log(`[SpreadJSAdapter] 数据加载完成: 请求 ${data.length - 1} 行, 实际加载 ${actualRowCount} 行`)
+      console.log(`[SpreadJSAdapter] 数据加载完成: ${rows.length} 行`)
+    }
+  }
+
+  async loadFormulaData(dataset: FormulaDataSet): Promise<void> {
+    if (this.sheet && this.workbook) {
+      console.log(`[SpreadJSAdapter] 开始加载公式数据: ${dataset.values.length} 行`)
+
+      this.workbook.suspendPaint()
+      this.sheet.suspendCalcService(false)
+      try {
+        // 第一步：setArray(false) 设置所有值
+        this.sheet.setArray(0, 0, dataset.values, false)
+        // 第二步：setArray(true) 设置公式（非公式格为 null，会被跳过）
+        this.sheet.setArray(0, 0, dataset.formulas, true)
+      } finally {
+        this.sheet.resumeCalcService(false)
+        this.workbook.resumePaint()
+      }
+
+      console.log(`[SpreadJSAdapter] 公式数据加载完成`)
     }
   }
 

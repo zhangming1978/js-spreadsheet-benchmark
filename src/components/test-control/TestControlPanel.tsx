@@ -1,5 +1,5 @@
 import { FC, MutableRefObject, useState, useMemo, useEffect } from 'react'
-import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal, Alert } from 'antd'
+import { Card, Select, Button, Space, Row, Col, Checkbox, message, Tooltip, Modal, Alert, Switch } from 'antd'
 import { PlayCircleOutlined, StopOutlined, QuestionCircleOutlined, ExclamationCircleOutlined, ReloadOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { TestScenario, ProductType } from '@/types'
 import { useTestStore } from '@/stores/useTestStore'
@@ -20,10 +20,12 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
     cooldownTime,
     selectedProducts,
     isRunning,
+    autoContinueEnabled,
     setSelectedScenario,
     setDataSize,
     setCooldownTime,
     setSelectedProducts,
+    setAutoContinueEnabled,
     reset,
     clearResults
   } = useTestStore()
@@ -64,11 +66,6 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       value: TestScenario.MEMORY,
       label: '内存占用',
       description: '测试方法：加载数据后等待500ms监控内存使用情况。评价标准：初始内存占用、峰值内存、内存稳定性。'
-    },
-    {
-      value: TestScenario.EXCEL_IMPORT,
-      label: 'Excel导入性能',
-      description: '测试方法：使用模拟数据测试数据加载性能（注：当前版本使用模拟数据，未实现真实Excel文件导入）。评价标准：数据加载速度、渲染性能。'
     }
   ]
 
@@ -90,9 +87,9 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       reason: '数据加载测试适合大规模数据集以充分测试加载性能'
     },
     [TestScenario.SCROLLING]: {
-      sizes: [10000, 50000, 100000, 500000],
-      default: 50000,
-      reason: '滚动性能测试需要大规模数据集以充分测试滚动流畅度'
+      sizes: [5000, 10000, 50000],
+      default: 5000,
+      reason: '滚动性能测试需要足够的数据量以充分测试滚动流畅度'
     },
     [TestScenario.EDITING]: {
       sizes: [5000, 10000, 50000],
@@ -113,11 +110,6 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
       sizes: [50000, 100000, 500000],
       default: 100000,
       reason: '内存占用测试需要大规模数据集以充分测试内存使用情况'
-    },
-    [TestScenario.EXCEL_IMPORT]: {
-      sizes: [5000, 10000, 50000, 100000],
-      default: 10000,
-      reason: 'Excel导入测试适合中等规模数据集，模拟典型Excel文件大小'
     }
   }
 
@@ -148,13 +140,8 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
   // 处理场景选择变化
   const handleScenarioChange = (value: TestScenario) => {
     setSelectedScenario(value)
-
-    // 自动调整数据规模到推荐值
     const scenarioConfig = scenarioDataSizeMap[value]
-    if (!scenarioConfig.sizes.includes(dataSize)) {
-      setDataSize(scenarioConfig.default)
-      message.info(`已自动调整数据规模为 ${scenarioConfig.default.toLocaleString()} 行（${scenarioConfig.reason}）`, 3)
-    }
+    setDataSize(scenarioConfig.default)
   }
 
   // 处理数据规模变化
@@ -387,6 +374,19 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
               >
                 重置
               </Button>
+              <Tooltip title="自动：每个产品测试完成后倒计时自动继续；手动：等待用户点击确认">
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '0 6px', height: 24, background: '#f5f5f5', borderRadius: 4, border: '1px solid #d9d9d9', cursor: 'default' }}>
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.65)', userSelect: 'none' }}>执行方式</span>
+                  <Switch
+                    size="small"
+                    checked={autoContinueEnabled}
+                    onChange={setAutoContinueEnabled}
+                    disabled={isRunning}
+                    checkedChildren="自动"
+                    unCheckedChildren="手动"
+                  />
+                </div>
+              </Tooltip>
             </Space>
           </div>
         </Col>
@@ -445,7 +445,13 @@ const TestControlPanel: FC<TestControlPanelProps> = ({ testEngineRef }) => {
               <strong style={{ color: '#333' }}>请保持浏览器窗口在前台</strong>，避免影响渲染性能
             </li>
           </ul>
-          <p style={{ fontSize: 13, marginTop: 16, marginBottom: 0, color: '#999' }}>
+          <div style={{ marginTop: 16, padding: '10px 12px', background: '#fff7e6', border: '1px solid #ffd591', borderRadius: 6 }}>
+            <p style={{ fontSize: 13, margin: 0, color: '#d46b08' }}>
+              <strong>⚠ 注意：</strong>测试大数据量时，部分产品可能导致浏览器无响应甚至崩溃。
+              若出现此情况，等待浏览器恢复或重启后，适当减少数据规模或减少测试产品数量后重试。
+            </p>
+          </div>
+          <p style={{ fontSize: 13, marginTop: 12, marginBottom: 0, color: '#999' }}>
             测试过程中会显示实时性能监控窗口，请耐心等待测试完成。
           </p>
         </div>

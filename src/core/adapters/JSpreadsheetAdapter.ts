@@ -229,16 +229,21 @@ export class JSpreadsheetAdapter extends ProductAdapter {
   scrollTo(row: number, col: number): void {
     if (this.spreadsheet) {
       try {
-        // jSpreadsheet 可能没有直接的 scrollTo 方法
-        // 尝试使用 DOM 滚动
-        const colName = this.getColumnName(col)
-        const cellName = `${colName}${row + 1}`
-        const cell = this.container?.querySelector(`[data-cell="${cellName}"]`)
-        if (cell) {
-          cell.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        const worksheet = Array.isArray(this.spreadsheet) ? this.spreadsheet[0] : this.spreadsheet
+        // jSpreadsheet 通过 scrollTo 方法滚动（部分版本支持）
+        if (worksheet && typeof worksheet.scrollTo === 'function') {
+          worksheet.scrollTo(row, col)
+        } else {
+          // 降级：找到表格容器直接设置 scrollTop
+          const tbody = this.container?.querySelector('.jexcel tbody') as HTMLElement
+            || this.container?.querySelector('tbody') as HTMLElement
+          if (tbody) {
+            const rowEl = tbody.children[row] as HTMLElement
+            if (rowEl) rowEl.scrollIntoView({ block: 'nearest' })
+          }
         }
       } catch (e) {
-        console.warn('[JSpreadsheetAdapter] Scroll not supported')
+        console.warn('[JSpreadsheetAdapter] Scroll failed:', e)
       }
     }
   }

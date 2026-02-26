@@ -2,6 +2,7 @@ import { ProductAdapter } from './ProductAdapter'
 import { ProductType } from '@/types'
 import { FPSMonitor } from './FPSMonitor'
 import Handsontable from 'handsontable'
+import { HyperFormula } from 'hyperformula'
 
 /**
  * Handsontable 适配器
@@ -31,10 +32,14 @@ export class HandsontableAdapter extends ProductAdapter {
     this.container = container
     this.fpsMonitor.start()
 
-    // 初始化 Handsontable 实例
+    // 初始化 Handsontable 实例（启用 HyperFormula 公式引擎）
     this.hotInstance = new Handsontable(container, {
       data: [],
       licenseKey: 'non-commercial-and-evaluation',
+      formulas: {
+        engine: HyperFormula,
+        sheetName: 'Sheet1'
+      },
       colHeaders: true,
       rowHeaders: true,
       width: '100%',

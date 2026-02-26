@@ -19,8 +19,7 @@ export enum TestScenario {
   EDITING = 'editing',
   FORMULA = 'formula',
   RENDERING = 'rendering',
-  MEMORY = 'memory',
-  EXCEL_IMPORT = 'excel-import'
+  MEMORY = 'memory'
 }
 
 /**

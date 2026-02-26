@@ -120,30 +120,36 @@ class FrameTestExecutor {
     }
 
     const { scenario, dataSize, runNumber } = data
+
+    // 预生成测试数据（不计入测试时间）
+    const tableData = scenario !== TestScenario.FORMULA
+      ? DataGenerator.generateTableData(dataSize)
+      : null
+    const formulaDataset = scenario === TestScenario.FORMULA
+      ? DataGenerator.generateFormulaData(dataSize)
+      : null
+
     const startTime = performance.now()
 
     // 执行测试场景
     switch (scenario) {
       case TestScenario.DATA_LOADING:
-        await this.testDataLoading(dataSize)
+        await this.testDataLoading(tableData!)
         break
       case TestScenario.SCROLLING:
-        await this.testScrolling(dataSize)
+        await this.testScrolling(tableData!, dataSize)
         break
       case TestScenario.EDITING:
-        await this.testEditing(dataSize)
+        await this.testEditing(tableData!)
         break
       case TestScenario.FORMULA:
-        await this.testFormula(dataSize)
+        await this.testFormula(formulaDataset!)
         break
       case TestScenario.RENDERING:
-        await this.testRendering(dataSize)
+        await this.testRendering(tableData!)
         break
       case TestScenario.MEMORY:
-        await this.testMemory(dataSize)
-        break
-      case TestScenario.EXCEL_IMPORT:
-        await this.testExcelImport(dataSize)
+        await this.testMemory(tableData!)
         break
       default:
         throw new Error(`未知的测试场景: ${scenario}`)
@@ -220,8 +226,7 @@ class FrameTestExecutor {
   }
 
   // 测试场景实现
-  private async testDataLoading(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
+  private async testDataLoading(data: any[][]): Promise<void> {
     await this.adapter!.loadData(data)
 
     // 等待渲染完成
@@ -230,14 +235,12 @@ class FrameTestExecutor {
     // 滚动到最后一行以验证数据已加载
     const lastRow = data.length - 1
     if (lastRow > 0) {
-      console.log(`[FrameTestExecutor] 滚动到最后一行 (${lastRow}) 以验证数据加载`)
       this.adapter!.scrollTo(lastRow, 0)
       await this.sleep(300)
     }
   }
 
-  private async testScrolling(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
+  private async testScrolling(data: any[][], dataSize: number): Promise<void> {
     await this.adapter!.loadData(data)
 
     const scrollSteps = 10
@@ -248,37 +251,28 @@ class FrameTestExecutor {
     }
   }
 
-  private async testEditing(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
+  private async testEditing(data: any[][]): Promise<void> {
     await this.adapter!.loadData(data)
 
-    const editCount = Math.min(100, dataSize)
+    const editCount = Math.min(100, data.length - 1)
     for (let i = 0; i < editCount; i++) {
       this.adapter!.setCellValue(i, 1, `编辑${i}`)
     }
   }
 
-  private async testFormula(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateFormulaData(dataSize)
-    await this.adapter!.loadData(data)
+  private async testFormula(dataset: ReturnType<typeof DataGenerator.generateFormulaData>): Promise<void> {
+    await this.adapter!.loadFormulaData(dataset)
     this.adapter!.recalculate()
   }
 
-  private async testRendering(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
+  private async testRendering(data: any[][]): Promise<void> {
     await this.adapter!.loadData(data)
     await this.sleep(100)
   }
 
-  private async testMemory(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
+  private async testMemory(data: any[][]): Promise<void> {
     await this.adapter!.loadData(data)
     await this.sleep(500)
-  }
-
-  private async testExcelImport(dataSize: number): Promise<void> {
-    const data = DataGenerator.generateTableData(dataSize)
-    await this.adapter!.loadData(data)
   }
 
   private sleep(ms: number): Promise<void> {

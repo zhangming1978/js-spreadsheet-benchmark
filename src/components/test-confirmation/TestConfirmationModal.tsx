@@ -1,6 +1,9 @@
-import { FC, useEffect, useState } from 'react'
-import { Modal, Button, Space, Statistic, Row, Col, Tag, Progress, Card } from 'antd'
-import { CheckCircleOutlined, ReloadOutlined, StopOutlined, CloseCircleOutlined, ThunderboltOutlined, DatabaseOutlined, DashboardOutlined } from '@ant-design/icons'
+import { FC } from 'react'
+import { Modal, Button, Space, Statistic, Row, Col, Tag, Progress, Table } from 'antd'
+import {
+  CheckCircleOutlined, ReloadOutlined, StopOutlined, CloseCircleOutlined,
+  ThunderboltOutlined, DatabaseOutlined, LoadingOutlined
+} from '@ant-design/icons'
 import { useTestStore } from '@/stores/useTestStore'
 import { ProductType } from '@/types'
 
@@ -10,288 +13,173 @@ interface TestConfirmationModalProps {
   onStop: () => void
 }
 
+const PRODUCT_COLORS: Record<string, string> = {
+  [ProductType.SPREADJS]: '#1890ff',
+  [ProductType.UNIVER]: '#52c41a',
+  [ProductType.HANDSONTABLE]: '#fa8c16',
+  [ProductType.LUCKYSHEET]: '#eb2f96',
+  [ProductType.X_SPREADSHEET]: '#722ed1',
+  [ProductType.JSPREADSHEET]: '#13c2c2',
+}
+
+const PRODUCT_NAMES: Record<string, string> = {
+  [ProductType.SPREADJS]: 'SpreadJS',
+  [ProductType.UNIVER]: 'Univer',
+  [ProductType.HANDSONTABLE]: 'Handsontable',
+  [ProductType.LUCKYSHEET]: 'Luckysheet',
+  [ProductType.X_SPREADSHEET]: 'x-spreadsheet',
+  [ProductType.JSPREADSHEET]: 'jSpreadsheet',
+}
+
 const TestConfirmationModal: FC<TestConfirmationModalProps> = ({ onContinue, onRetest, onStop }) => {
-  const { waitingForConfirmation, currentTestResult, currentProduct, isRunning } = useTestStore()
-  const [fps, setFps] = useState<number>(0)
-  const [memory, setMemory] = useState<number>(0)
-  const [memoryLimit, setMemoryLimit] = useState<number>(0)
+  const {
+    waitingForConfirmation, currentTestResult, currentProduct, isRunning,
+    isLastTest, autoContinueEnabled, autoContinueCountdown,
+    currentFPS, currentMemory, testStage, currentRun, totalRuns
+  } = useTestStore()
 
-  // 实时性能监控
-  useEffect(() => {
-    if (!isRunning) {
-      setFps(0)
-      setMemory(0)
-      return
-    }
+  if (!isRunning && !waitingForConfirmation) return null
 
-    // FPS 监控
-    let frameCount = 0
-    let lastTime = performance.now()
-    let animationFrameId: number
+  const productName = currentProduct ? (PRODUCT_NAMES[currentProduct] ?? currentProduct) : ''
+  const productColor = currentProduct ? (PRODUCT_COLORS[currentProduct] ?? '#666') : '#666'
+  const isConfirming = waitingForConfirmation && !!currentTestResult && !!currentProduct
 
-    const measureFPS = () => {
-      frameCount++
-      const currentTime = performance.now()
-      const elapsed = currentTime - lastTime
+  const fpsColor = currentFPS >= 50 ? '#3f8600' : currentFPS >= 30 ? '#faad14' : '#cf1322'
+  const fpsStatus: 'success' | 'normal' | 'exception' = currentFPS >= 50 ? 'success' : currentFPS >= 30 ? 'normal' : 'exception'
 
-      if (elapsed >= 1000) {
-        const currentFps = Math.round((frameCount * 1000) / elapsed)
-        setFps(currentFps)
-        frameCount = 0
-        lastTime = currentTime
-      }
+  const memoryPercent = currentMemory > 0 ? Math.min(100, Math.round((currentMemory / 2048) * 100)) : 0
+  const memoryColor = memoryPercent < 60 ? '#3f8600' : memoryPercent < 80 ? '#faad14' : '#cf1322'
+  const memoryStatus: 'success' | 'normal' | 'exception' = memoryPercent < 60 ? 'success' : memoryPercent < 80 ? 'normal' : 'exception'
 
-      animationFrameId = requestAnimationFrame(measureFPS)
-    }
-
-    animationFrameId = requestAnimationFrame(measureFPS)
-
-    // 内存监控
-    const memoryInterval = setInterval(() => {
-      if ((performance as any).memory) {
-        const memoryInfo = (performance as any).memory
-        const usedMemory = memoryInfo.usedJSHeapSize / (1024 * 1024)
-        const totalMemory = memoryInfo.jsHeapSizeLimit / (1024 * 1024)
-        setMemory(Math.round(usedMemory))
-        setMemoryLimit(Math.round(totalMemory))
-      }
-    }, 500)
-
-    return () => {
-      cancelAnimationFrame(animationFrameId)
-      clearInterval(memoryInterval)
-    }
-  }, [isRunning])
-
-  const getProductName = (type: ProductType) => {
-    switch (type) {
-      case ProductType.SPREADJS:
-        return 'SpreadJS'
-      case ProductType.UNIVER:
-        return 'Univer'
-      case ProductType.HANDSONTABLE:
-        return 'Handsontable'
-      default:
-        return type
-    }
-  }
-
-  const getProductColor = (type: ProductType) => {
-    switch (type) {
-      case ProductType.SPREADJS:
-        return '#1890ff'
-      case ProductType.UNIVER:
-        return '#52c41a'
-      case ProductType.HANDSONTABLE:
-        return '#fa8c16'
-      default:
-        return '#666'
-    }
-  }
-
-  const memoryPercent = memoryLimit > 0 ? Math.round((memory / memoryLimit) * 100) : 0
-
-  const getFpsStatus = (fps: number): 'success' | 'normal' | 'exception' => {
-    if (fps >= 50) return 'success'
-    if (fps >= 30) return 'normal'
-    return 'exception'
-  }
-
-  const getMemoryStatus = (percent: number): 'success' | 'normal' | 'exception' => {
-    if (percent < 60) return 'success'
-    if (percent < 80) return 'normal'
-    return 'exception'
-  }
-
-  // 如果不在运行且不在等待确认，不显示对话框
-  if (!isRunning && !waitingForConfirmation) {
-    return null
-  }
-
-  // 测试运行中 - 显示实时性能监控
-  if (isRunning && !waitingForConfirmation) {
-    return (
-      <Modal
-        open={true}
-        title={
-          <span>
-            <DashboardOutlined style={{ marginRight: 8 }} />
-            实时性能监控
-            {currentProduct && (
-              <span style={{ marginLeft: 16, fontWeight: 'normal', fontSize: 14 }}>
-                正在测试: <Tag color={getProductColor(currentProduct)}>{getProductName(currentProduct)}</Tag>
-              </span>
-            )}
-          </span>
-        }
-        footer={null}
-        closable={false}
-        maskClosable={false}
-        width={700}
-        style={{ top: 20 }}
-      >
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12}>
-            <Card size="small">
-              <Statistic
-                title={
-                  <span>
-                    <ThunderboltOutlined style={{ marginRight: 4 }} />
-                    帧率 (FPS)
-                  </span>
-                }
-                value={fps}
-                suffix="fps"
-                valueStyle={{
-                  color: fps >= 50 ? '#3f8600' : fps >= 30 ? '#faad14' : '#cf1322',
-                  fontSize: '28px'
-                }}
-              />
-              <Progress
-                percent={Math.min(100, (fps / 60) * 100)}
-                status={getFpsStatus(fps)}
-                showInfo={false}
-                strokeWidth={8}
-              />
-              <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                {fps >= 50 && '流畅'}
-                {fps >= 30 && fps < 50 && '一般'}
-                {fps < 30 && '卡顿'}
-              </div>
-            </Card>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Card size="small">
-              <Statistic
-                title={
-                  <span>
-                    <DatabaseOutlined style={{ marginRight: 4 }} />
-                    内存使用
-                  </span>
-                }
-                value={memory}
-                suffix={`MB / ${memoryLimit} MB`}
-                valueStyle={{
-                  color: memoryPercent < 60 ? '#3f8600' : memoryPercent < 80 ? '#faad14' : '#cf1322',
-                  fontSize: '28px'
-                }}
-              />
-              <Progress
-                percent={memoryPercent}
-                status={getMemoryStatus(memoryPercent)}
-                showInfo={false}
-                strokeWidth={8}
-              />
-              <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                {memoryPercent < 60 && '正常'}
-                {memoryPercent >= 60 && memoryPercent < 80 && '偏高'}
-                {memoryPercent >= 80 && '过高'}
-              </div>
-            </Card>
-          </Col>
-        </Row>
-      </Modal>
-    )
-  }
-
-  // 等待用户确认 - 显示测试结果和确认按钮
-  if (!currentTestResult || !currentProduct) {
-    return null
-  }
+  // 三轮结果表格列
+  const runColumns = [
+    { title: '轮次', dataIndex: 'runNumber', key: 'run', width: 60, render: (v: number) => `第 ${v} 轮` },
+    { title: '执行时间', dataIndex: 'executionTime', key: 'time', render: (v: number) => `${v.toFixed(0)} ms` },
+    { title: 'FPS', dataIndex: 'fps', key: 'fps', render: (v: number) => v.toFixed(1) },
+    { title: '内存', dataIndex: 'memoryUsage', key: 'mem', render: (v: number) => `${v.toFixed(0)} MB` },
+  ]
 
   return (
     <Modal
-      open={waitingForConfirmation}
+      open={true}
       title={
         <Space>
-          {currentTestResult.success ? (
-            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 20 }} />
-          ) : (
-            <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 20 }} />
-          )}
-          <span style={{ fontSize: 18 }}>
-            {getProductName(currentProduct)} 测试{currentTestResult.success ? '完成' : '失败'}
+          {isConfirming
+            ? (currentTestResult!.success
+              ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 18 }} />
+              : <CloseCircleOutlined style={{ color: '#ff4d4f', fontSize: 18 }} />)
+            : <LoadingOutlined style={{ color: '#1890ff', fontSize: 18 }} />
+          }
+          <span style={{ fontSize: 16 }}>
+            {isConfirming
+              ? `${productName} 测试${currentTestResult!.success ? '完成' : '失败'}`
+              : '测试监控'}
           </span>
+          {currentProduct && (
+            <Tag color={productColor} style={{ marginLeft: 4 }}>{productName}</Tag>
+          )}
         </Space>
       }
-      width={700}
+      width={680}
       closable={false}
       maskClosable={false}
       keyboard={false}
       style={{ top: 20 }}
       footer={
-        <Space size="middle">
-          <Button
-            icon={<StopOutlined />}
-            onClick={onStop}
-          >
-            停止测试
-          </Button>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={onRetest}
-          >
-            重新测试
-          </Button>
-          <Button
-            type="primary"
-            icon={<CheckCircleOutlined />}
-            onClick={onContinue}
-          >
-            继续下一个
-          </Button>
-        </Space>
+        isConfirming ? (
+          <Space size="middle">
+            <Button icon={<StopOutlined />} onClick={onStop}>停止测试</Button>
+            <Button icon={<ReloadOutlined />} onClick={onRetest}>重新测试</Button>
+            <Button type="primary" icon={<CheckCircleOutlined />} onClick={onContinue}>
+              {isLastTest ? '查看结果' : '继续下一个'}
+              {autoContinueEnabled && autoContinueCountdown > 0 && ` (${autoContinueCountdown})`}
+            </Button>
+          </Space>
+        ) : (
+          <Button danger icon={<StopOutlined />} onClick={onStop}>停止测试</Button>
+        )
       }
     >
-      <div style={{ padding: '16px 0' }}>
-        <div style={{ marginBottom: 24, textAlign: 'center' }}>
-          <Tag color={getProductColor(currentProduct)} style={{ fontSize: 16, padding: '8px 16px' }}>
-            {getProductName(currentProduct)}
-          </Tag>
+      {/* 测试中：实时指标 */}
+      {!isConfirming && (
+        <div style={{ padding: '8px 0' }}>
+          <Row gutter={[12, 12]}>
+            <Col span={12}>
+              <div style={{ padding: '12px 16px', background: '#fafafa', borderRadius: 6, border: '1px solid #f0f0f0' }}>
+                <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>
+                  <ThunderboltOutlined style={{ marginRight: 4 }} />帧率 (FPS)
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 600, color: fpsColor, lineHeight: 1 }}>
+                  {currentFPS}
+                </div>
+                <Progress percent={Math.min(100, (currentFPS / 60) * 100)} status={fpsStatus} showInfo={false} strokeWidth={6} style={{ marginTop: 8 }} />
+                <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+                  {currentFPS >= 50 ? '流畅' : currentFPS >= 30 ? '一般' : currentFPS > 0 ? '卡顿' : '等待中...'}
+                </div>
+              </div>
+            </Col>
+            <Col span={12}>
+              <div style={{ padding: '12px 16px', background: '#fafafa', borderRadius: 6, border: '1px solid #f0f0f0' }}>
+                <div style={{ fontSize: 12, color: '#666', marginBottom: 6 }}>
+                  <DatabaseOutlined style={{ marginRight: 4 }} />内存占用
+                </div>
+                <div style={{ fontSize: 28, fontWeight: 600, color: memoryColor, lineHeight: 1 }}>
+                  {currentMemory > 0 ? `${currentMemory.toFixed(0)}` : '—'}
+                </div>
+                <Progress percent={memoryPercent} status={memoryStatus} showInfo={false} strokeWidth={6} style={{ marginTop: 8 }} />
+                <div style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+                  {currentMemory > 0 ? `${currentMemory.toFixed(0)} MB` : '等待中...'}
+                </div>
+              </div>
+            </Col>
+          </Row>
+
+          {testStage && (
+            <div style={{ marginTop: 12, padding: '8px 12px', background: '#e6f7ff', border: '1px solid #91d5ff', borderRadius: 4, fontSize: 13, color: '#1890ff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span><LoadingOutlined style={{ marginRight: 6 }} />{testStage}</span>
+              {currentRun > 0 && <span style={{ fontSize: 12, color: '#69b1ff' }}>第 {currentRun} / {totalRuns} 轮</span>}
+            </div>
+          )}
         </div>
+      )}
 
-        {currentTestResult.success ? (
-          <>
-            <div style={{ marginBottom: 16, fontSize: 14, color: '#666' }}>
-              测试已成功完成，您可以在下方看到表格实例。请确认测试结果后选择下一步操作：
+      {/* 测试完成：结果汇总 */}
+      {isConfirming && currentTestResult && (
+        <div style={{ padding: '8px 0' }}>
+          {currentTestResult.success ? (
+            <>
+              <Row gutter={16} style={{ marginBottom: 16 }}>
+                <Col span={8}>
+                  <Statistic title="平均执行时间" value={currentTestResult.metrics.executionTime.toFixed(0)} suffix="ms" valueStyle={{ fontSize: 22 }} />
+                </Col>
+                <Col span={8}>
+                  <Statistic title="平均 FPS" value={currentTestResult.metrics.fps?.toFixed(1) ?? '0'} valueStyle={{ fontSize: 22 }} />
+                </Col>
+                <Col span={8}>
+                  <Statistic title="平均内存" value={currentTestResult.metrics.memoryUsage.toFixed(0)} suffix="MB" valueStyle={{ fontSize: 22 }} />
+                </Col>
+              </Row>
+              {currentTestResult.runs && currentTestResult.runs.length > 0 && (
+                <Table
+                  dataSource={currentTestResult.runs}
+                  columns={runColumns}
+                  rowKey="runNumber"
+                  size="small"
+                  pagination={false}
+                  style={{ marginTop: 8 }}
+                />
+              )}
+            </>
+          ) : (
+            <div style={{ fontSize: 14, color: '#ff4d4f' }}>
+              <div style={{ marginBottom: 8 }}>测试失败：</div>
+              <div style={{ padding: 12, background: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 4 }}>
+                {currentTestResult.error || '未知错误'}
+              </div>
             </div>
-
-            <Row gutter={16} style={{ marginTop: 24 }}>
-              <Col span={8}>
-                <Statistic
-                  title="执行时间"
-                  value={currentTestResult.metrics.executionTime.toFixed(2)}
-                  suffix="ms"
-                  valueStyle={{ fontSize: 20 }}
-                />
-              </Col>
-              <Col span={8}>
-                <Statistic
-                  title="FPS"
-                  value={currentTestResult.metrics.fps?.toFixed(1) || 0}
-                  valueStyle={{ fontSize: 20 }}
-                />
-              </Col>
-              <Col span={8}>
-                <Statistic
-                  title="内存占用"
-                  value={currentTestResult.metrics.memoryUsage.toFixed(2)}
-                  suffix="MB"
-                  valueStyle={{ fontSize: 20 }}
-                />
-              </Col>
-            </Row>
-          </>
-        ) : (
-          <div style={{ marginBottom: 16, fontSize: 14, color: '#ff4d4f' }}>
-            <div style={{ marginBottom: 8 }}>测试失败：</div>
-            <div style={{ padding: 12, background: '#fff2f0', border: '1px solid #ffccc7', borderRadius: 4 }}>
-              {currentTestResult.error || '未知错误'}
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </Modal>
   )
 }

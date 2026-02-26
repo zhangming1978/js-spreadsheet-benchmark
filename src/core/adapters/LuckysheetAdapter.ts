@@ -126,10 +126,14 @@ export class LuckysheetAdapter extends ProductAdapter {
       data.forEach((row) => {
         const luckysheetRow: any[] = []
         row.forEach((cell) => {
-          luckysheetRow.push({
-            v: cell,  // 单元格值
-            m: String(cell),  // 显示值
-            ct: { fa: 'General', t: 'g' }  // 单元格类型
+          const isFormula = typeof cell === 'string' && cell.startsWith('=')
+          luckysheetRow.push(isFormula ? {
+            f: cell,
+            ct: { fa: 'General', t: 'f' }
+          } : {
+            v: cell,
+            m: String(cell),
+            ct: { fa: 'General', t: 'g' }
           })
         })
         luckysheetData.push(luckysheetRow)
@@ -288,10 +292,22 @@ export class LuckysheetAdapter extends ProductAdapter {
     // @ts-ignore
     if (typeof window.luckysheet !== 'undefined') {
       try {
+        // Luckysheet 通过 scrollToCell 滚动到指定单元格
         // @ts-ignore
-        window.luckysheet.scroll({ row, column: col })
+        if (typeof window.luckysheet.scrollToCell === 'function') {
+          // @ts-ignore
+          window.luckysheet.scrollToCell({ row, column: col })
+        } else {
+          // 降级：找到 Luckysheet 的滚动容器直接设置 scrollTop
+          const container = document.getElementById('luckysheet-scrollbar-y')
+            || document.querySelector('.luckysheet-scrollbar-y') as HTMLElement
+          if (container) {
+            const rowHeight = 19 // Luckysheet 默认行高
+            container.scrollTop = row * rowHeight
+          }
+        }
       } catch (e) {
-        console.warn('[LuckysheetAdapter] Scroll not supported')
+        console.warn('[LuckysheetAdapter] Scroll failed:', e)
       }
     }
   }

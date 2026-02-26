@@ -206,13 +206,21 @@ export class XSpreadsheetAdapter extends ProductAdapter {
   }
 
   // ==================== 滚动操作 ====================
-  scrollTo(row: number, col: number): void {
+  scrollTo(row: number, _col: number): void {
     if (this.spreadsheet) {
-      // x-spreadsheet 的滚动API有限，尝试使用 scroll 方法
       try {
-        this.spreadsheet.scroll(row, col)
+        // x-spreadsheet 内部通过 scrollbar 控制滚动
+        // 找到滚动容器并直接设置 scrollTop
+        const el = this.container?.querySelector('.x-spreadsheet-table') as HTMLElement
+          || this.container?.querySelector('canvas')?.parentElement as HTMLElement
+        if (el) {
+          const rowHeight = 25 // 与初始化时的 row.height 一致
+          el.scrollTop = row * rowHeight
+        }
+        // 触发重新渲染
+        this.spreadsheet.reRender()
       } catch (e) {
-        console.warn('[XSpreadsheetAdapter] Scroll not supported')
+        console.warn('[XSpreadsheetAdapter] Scroll failed:', e)
       }
     }
   }

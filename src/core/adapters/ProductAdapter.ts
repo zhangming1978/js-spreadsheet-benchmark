@@ -1,4 +1,5 @@
 import { ProductType } from '@/types'
+import type { FormulaDataSet } from '../engine/DataGenerator'
 
 /**
  * 产品适配器基类
@@ -46,6 +47,17 @@ export abstract class ProductAdapter {
    * 加载数据
    */
   abstract loadData(data: any[][]): Promise<void>
+
+  /**
+   * 加载公式数据（测试前已预处理好的 values + formulas）
+   * 默认实现：重建 raw 数组后调 loadData，子类可覆写以直接调用 API
+   */
+  async loadFormulaData(dataset: FormulaDataSet): Promise<void> {
+    const raw = dataset.values.map((row, r) =>
+      row.map((cell, c) => dataset.formulas[r][c] || cell)
+    )
+    await this.loadData(raw)
+  }
 
   /**
    * 获取数据

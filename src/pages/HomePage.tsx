@@ -5,6 +5,7 @@ import TestControlPanel from '@/components/test-control/TestControlPanel'
 import ProductDisplayArea from '@/components/product-display/ProductDisplayArea'
 import ResultsPanel from '@/components/results/ResultsPanel'
 import PerformanceChart from '@/components/charts/PerformanceChart'
+import TestConfirmationModal from '@/components/test-confirmation/TestConfirmationModal'
 import { useTestStore } from '@/stores/useTestStore'
 import { TestEngine } from '@/core/engine'
 import './HomePage.css'
@@ -65,11 +66,7 @@ const HomePage: FC = () => {
 
           {/* 产品显示区域 - 测试时显示，完成后隐藏 */}
           <div className="display-section" style={{ display: showResults ? 'none' : 'block' }}>
-            <ProductDisplayArea
-              onContinue={handleContinue}
-              onRetest={handleRetest}
-              onStop={handleConfirmStop}
-            />
+            <ProductDisplayArea />
           </div>
 
           {/* 测试结果区域 - 只在测试完成后显示 */}
@@ -87,6 +84,13 @@ const HomePage: FC = () => {
           )}
         </div>
       </Content>
+
+      {/* 测试确认弹窗（含实时性能监控 + 产品间确认） */}
+      <TestConfirmationModal
+        onContinue={handleContinue}
+        onRetest={handleRetest}
+        onStop={handleConfirmStop}
+      />
     </Layout>
   )
 }

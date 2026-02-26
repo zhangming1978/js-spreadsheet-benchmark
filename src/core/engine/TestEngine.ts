@@ -2,7 +2,6 @@ import { ProductType } from '@/types'
 import type { TestScenario, TestResult } from '@/types'
 import { IframeTestRunner } from './IframeTestRunner'
 import { useTestStore } from '@/stores/useTestStore'
-import { message } from 'antd'
 
 /**
  * 测试配置接口
@@ -156,8 +155,6 @@ export class TestEngine {
         percentage: 100
       })
 
-      // 所有测试完成
-      message.success({ content: '所有测试已完成！', key: 'test-progress', duration: 3 })
       console.log('[TestEngine] 所有测试已完成')
     } catch (error) {
       console.error('[TestEngine] 测试失败:', error)
@@ -190,8 +187,6 @@ export class TestEngine {
     console.log(`[TestEngine] ========== 开始测试 ${productType} (最后一个测试: ${isLastTest}) ==========`)
 
     // 显示开始测试的消息
-    const productName = productType === ProductType.SPREADJS ? 'SpreadJS' : productType === ProductType.HANDSONTABLE ? 'Handsontable' : productType
-    message.loading({ content: `正在准备 ${productName} 测试环境...`, key: 'test-progress', duration: 0 })
 
     try {
       // 创建 iframe 测试运行器
@@ -199,7 +194,6 @@ export class TestEngine {
       const runner = new IframeTestRunner(productType)
 
       // 运行测试
-      message.loading({ content: `正在测试 ${productName}...`, key: 'test-progress', duration: 0 })
       console.log(`[TestEngine] 步骤 2: 运行测试场景: ${this.config.scenario}, 数据规模: ${this.config.dataSize}`)
       const testStartTime = performance.now()
       const result = await runner.runTest(this.config.scenario, this.config.dataSize)
@@ -207,9 +201,7 @@ export class TestEngine {
       console.log(`[TestEngine] 步骤 2: 测试完成，耗时 ${(testEndTime - testStartTime).toFixed(2)}ms`)
       console.log(`[TestEngine] 步骤 2: 测试结果:`, result)
 
-      // 测试完成消息
-      message.success({ content: `${productName} 测试完成！`, key: 'test-progress', duration: 2 })
-
+      // 测试完成
       const store = useTestStore.getState()
 
       // 所有测试（包括最后一个）都等待用户确认
@@ -255,9 +247,6 @@ export class TestEngine {
       return result
     } catch (error) {
       console.error(`[TestEngine] ========== 测试 ${productType} 失败 ==========`, error)
-
-      // 显示错误消息
-      message.error({ content: `${productName} 测试失败`, key: 'test-progress', duration: 3 })
 
       // 即使失败也要等待用户确认
       const store = useTestStore.getState()
@@ -310,18 +299,9 @@ export class TestEngine {
       (window as any).gc()
     }
 
-    // 显示冷却倒计时
     for (let remaining = seconds; remaining > 0; remaining--) {
-      message.loading({
-        content: `冷却中... 还剩 ${remaining} 秒`,
-        key: 'cooldown-progress',
-        duration: 0
-      })
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
-
-    // 清除冷却消息
-    message.destroy('cooldown-progress')
   }
 
   /**

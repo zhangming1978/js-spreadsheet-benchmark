@@ -21,12 +21,11 @@ const ResultsComparison: FC<ResultsComparisonProps> = ({ results }) => {
     return uniqueScenarios
   }, [results])
 
-  // 根据选择的场景筛选结果
+  // 根据选择的场景筛选结果（排除失败的测试）
   const filteredResults = useMemo(() => {
-    if (selectedScenario === 'all') {
-      return results
-    }
-    return results.filter(r => r.scenario === selectedScenario)
+    const successResults = results.filter(r => r.success)
+    if (selectedScenario === 'all') return successResults
+    return successResults.filter(r => r.scenario === selectedScenario)
   }, [results, selectedScenario])
 
   // 获取场景名称
@@ -37,8 +36,7 @@ const ResultsComparison: FC<ResultsComparisonProps> = ({ results }) => {
       'editing': '编辑性能',
       'formula': '公式计算',
       'rendering': '渲染性能',
-      'memory': '内存占用',
-      'excel-import': 'Excel导入'
+      'memory': '内存占用'
     }
     return scenarioMap[scenario] || scenario
   }

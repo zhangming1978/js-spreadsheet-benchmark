@@ -4,7 +4,9 @@ import { FPSMonitor } from './FPSMonitor'
 import { Univer, IWorkbookData, LocaleType } from '@univerjs/core'
 import { defaultTheme } from '@univerjs/design'
 import { UniverRenderEnginePlugin } from '@univerjs/engine-render'
+import { UniverFormulaEnginePlugin } from '@univerjs/engine-formula'
 import { UniverSheetsPlugin } from '@univerjs/sheets'
+import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula'
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui'
 import { UniverUIPlugin } from '@univerjs/ui'
 import { UniverDocsPlugin } from '@univerjs/docs'
@@ -14,12 +16,15 @@ import type { FWorkbook, FWorksheet } from '@univerjs/sheets/facade'
 // Import facade side effects to register facade methods
 import '@univerjs/sheets/facade'
 import '@univerjs/sheets-ui/facade'
+import '@univerjs/sheets-formula/facade'
+import type { FormulaDataSet } from '../engine/DataGenerator'
 
 // Import locale data
 import DesignZhCN from '@univerjs/design/locale/zh-CN'
 import UIZhCN from '@univerjs/ui/locale/zh-CN'
 import SheetsZhCN from '@univerjs/sheets/locale/zh-CN'
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN'
+import SheetsFormulaZhCN from '@univerjs/sheets-formula/locale/zh-CN'
 import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN'
 
 /**
@@ -63,12 +68,14 @@ export class UniverAdapter extends ProductAdapter {
           ...DocsUIZhCN,
           ...SheetsZhCN,
           ...SheetsUIZhCN,
+          ...SheetsFormulaZhCN,
         },
       },
     })
 
     // 注册核心插件和 UI 插件
     this.univer.registerPlugin(UniverRenderEnginePlugin)
+    this.univer.registerPlugin(UniverFormulaEnginePlugin)
     this.univer.registerPlugin(UniverUIPlugin, {
       container: container,
     })
@@ -79,6 +86,7 @@ export class UniverAdapter extends ProductAdapter {
 
     // 注册表格插件
     this.univer.registerPlugin(UniverSheetsPlugin)
+    this.univer.registerPlugin(UniverSheetsFormulaPlugin)
     this.univer.registerPlugin(UniverSheetsUIPlugin)
 
     // 创建 Facade API
@@ -132,15 +140,23 @@ export class UniverAdapter extends ProductAdapter {
   async loadData(data: any[][]): Promise<void> {
     if (this.worksheet && data.length > 0) {
       console.log(`[UniverAdapter] 开始加载数据: ${data.length} 行 x ${data[0]?.length || 0} 列`)
-
-      // 使用 setValues 批量设置数据（包括表头）
       const range = this.worksheet.getRange(0, 0, data.length, data[0]?.length || 0)
-      await range.setValues(data)
+      range.setValues(data)
+      console.log(`[UniverAdapter] 数据加载完成: ${data.length} 行`)
+    }
+  }
 
-      // 验证实际加载的数据
-      const verifyRange = this.worksheet.getRange(0, 0, data.length, data[0]?.length || 0)
-      const loadedData = verifyRange.getValues()
-      console.log(`[UniverAdapter] 数据加载完成: 请求 ${data.length} 行, 实际加载 ${loadedData.length} 行`)
+  async loadFormulaData(dataset: FormulaDataSet): Promise<void> {
+    if (this.worksheet) {
+      const rows = dataset.values.length
+      const cols = dataset.values[0]?.length || 0
+      console.log(`[UniverAdapter] 开始加载公式数据: ${rows} 行 x ${cols} 列`)
+      const range = this.worksheet.getRange(0, 0, rows, cols)
+      // 先设置所有值（公式格为 null，会被跳过）
+      range.setValues(dataset.values)
+      // 再批量设置公式（非公式格为 ''，会被跳过）
+      range.setFormulas(dataset.formulas)
+      console.log(`[UniverAdapter] 公式数据加载完成`)
     }
   }
 
@@ -206,7 +222,7 @@ export class UniverAdapter extends ProductAdapter {
   setFormula(row: number, col: number, formula: string): void {
     if (this.worksheet) {
       const range = this.worksheet.getRange(row, col)
-      range.setValue(formula)
+      range.setFormula(formula)
     }
   }
 
@@ -219,9 +235,7 @@ export class UniverAdapter extends ProductAdapter {
   // ==================== 滚动操作 ====================
   scrollTo(row: number, col: number): void {
     if (this.worksheet) {
-      // 激活指定单元格（会自动滚动到该位置）
-      const range = this.worksheet.getRange(row, col)
-      range.activate()
+      this.worksheet.scrollToCell(row, col)
     }
   }
 

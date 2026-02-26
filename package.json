@@ -37,6 +37,7 @@
     "echarts-for-react": "^3.0.2",
     "handsontable": "^16.2.0",
     "html2canvas": "^1.4.1",
+    "hyperformula": "^3.2.0",
     "jquery": "^4.0.0",
     "jquery-mousewheel": "^3.2.2",
     "jspdf": "^4.1.0",
@@ -46,7 +47,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "x-data-spreadsheet": "^1.1.9",
-    "xlsx": "^0.18.5",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

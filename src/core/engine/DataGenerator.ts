@@ -62,7 +62,6 @@ export class DataGenerator {
     console.log(`[DataGenerator] 生成公式数据: ${rows} 行 x 10 列`)
 
     const headers = ['Val1', 'Val2', 'Add', 'Mul', 'Chain1', 'Sub', 'Div', 'Chain2', 'Rand1', 'Rand2']
-    const headerValues = headers.map(() => null as any)
     const headerFormulas = headers.map(() => '')
 
     const values: any[][] = [headers.map(h => h)]  // 表头行：值就是表头字符串
